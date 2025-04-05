@@ -25,11 +25,13 @@ import _accountService from "../../../services/accounservice";
 
 const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { token } = theme.useToken();
   const { setUser } = useUserContext();
   const navigate = useNavigate();
   const onFinish = async (values: any) => {
     try {
+      setIsSubmitting(true)
       setErrorMessage("");
       const response = await _accountService.login(values as LoginPayload);
       if (!response.user) return;
@@ -41,6 +43,7 @@ const LoginPage = () => {
     } catch (err: any) {
       setErrorMessage(err.response?.data ?? err.message ?? "");
     }
+    setIsSubmitting(false)
   };
 
   return (
@@ -63,7 +66,7 @@ const LoginPage = () => {
           name="normal_login"
           className="login-form"
           initialValues={{ remember: true }}
-          onFinish={onFinish}
+          onFinish={async(value:any)=>await onFinish(value)}
         >
           <Form.Item
             name="username"
@@ -102,6 +105,7 @@ const LoginPage = () => {
 
           <Form.Item>
             <Button
+              loading={isSubmitting}
               type="primary"
               htmlType="submit"
               className="login-form-button"

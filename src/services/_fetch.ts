@@ -6,7 +6,7 @@ const ONLINE_BASE="https://vehisense-api.runasp.net/api/";
 
 const _fetch = axios.create({
   baseURL: ONLINE_BASE,
-  timeout: 1000,
+  timeout: 6000,
   headers: { "X-Custom-Header": "foobar" },
 });
 
