@@ -1,8 +1,11 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
+const LOCAL_BASE ="http://localhost:5044/api/";
+const ONLINE_BASE="https://vehisense-api.runasp.net/api/";
+
 const _fetch = axios.create({
-  baseURL: "http://localhost:5044/api/",
+  baseURL: ONLINE_BASE,
   timeout: 1000,
   headers: { "X-Custom-Header": "foobar" },
 });
