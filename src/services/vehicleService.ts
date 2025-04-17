@@ -9,9 +9,9 @@ class VehicleService extends GenericService<VehiclesTbl> {
     constructor() {
         super("vehicles");
     }
-    public async CountAll(data?:VehicleDateRange){
+    public async Count(data?:VehicleDateRange){
         const params = objectToUrlParams(data)
-        const {data:response} = await _fetch.get<number>(`${this.subdirectory}/count-all?${params}`);
+        const {data:response} = await _fetch.get<number>(`${this.subdirectory}/count?${params}`);
         return response;
     }
 }

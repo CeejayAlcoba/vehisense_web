@@ -1,5 +1,5 @@
 
-import { VehicleLogs, VehicleLogsCountType, VehicleLogsDateRange, VehicleLogsTotal } from "../types/VehicleLogs";
+import { VehicleLogs, VehicleLogsCountType, VehicleLogsDateRange } from "../types/VehicleLogs";
 import objectToUrlParams from "../utils/objectToUrlParams";
 import _fetch from "./_fetch";
 import GenericService from "./genericService";
@@ -11,11 +11,6 @@ class VehicleLogsService extends GenericService<VehicleLogs> {
     public async getAllAsync(data?: VehicleLogsDateRange){
         const params = objectToUrlParams(data);
         const { data: response } = await _fetch.get<VehicleLogs[]>(`${this.subdirectory}/list?${params}`);
-        return response;
-      }
-    public async GetTotals(data?:VehicleLogsDateRange){
-        const params = objectToUrlParams(data)
-        const {data:response} = await _fetch.get<VehicleLogsTotal>(`${this.subdirectory}/totals?${params}`);
         return response;
     }
     public async CountByType(data?:VehicleLogsDateRange){
@@ -40,6 +35,10 @@ class VehicleLogsService extends GenericService<VehicleLogs> {
     }
     public async GetUnregisterOverDues(){
         const {data:response} = await _fetch.get<VehicleLogs[]>(`${this.subdirectory}/unregister/over-dues`);
+        return response;
+    }
+    public async CountUnregisterOverDues(){
+        const {data:response} = await _fetch.get<number>(`${this.subdirectory}/unregister/over-dues/count`);
         return response;
     }
 

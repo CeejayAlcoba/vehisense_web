@@ -5,9 +5,7 @@ export default function MonitoringColorLegend() {
     <div
       style={{
         position: "absolute",
-
         left: 0,
-
         bottom: 0,
         display: "flex",
         justifyContent: "center",
@@ -15,7 +13,7 @@ export default function MonitoringColorLegend() {
         zIndex: 9999,
       }}
     >
-      <Card title="Color Legend" style={{ width: 200 }}>
+      <Card title="Color Legend" style={{ width: "200px" }}>
         <Row gutter={16}>
           <Col span={24}>
             <Badge color="red" count="UNREGISTERED" />

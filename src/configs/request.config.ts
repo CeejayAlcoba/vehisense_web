@@ -1,2 +1,2 @@
-export const TIMEOUT_REQUEST = 6000;
-export const REFETCH_INTERVAL = 5000;
+export const TIMEOUT_REQUEST = 10000;
+export const REFETCH_INTERVAL = 4000;

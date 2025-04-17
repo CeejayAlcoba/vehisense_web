@@ -13,9 +13,9 @@ import MonitoringPage from "./pages/main/monitoring/MonitoringPage";
 import VehicleManagementPage from "./pages/main/vehicle-management/VehicleManagementPage";
 import { useQuery } from "@tanstack/react-query";
 import Toast from "./components/toast/Toast";
-import { useEffect } from "react";
 import _vehicleLogsService from "./services/VehicleLogsService";
 import { playAlertSound } from "./components/alertSound/playAlertSound";
+import BlacklistedVehiclePage from "./pages/main/blacklistedVehicle/BlacklistedVehiclePage";
 
 function AppRoute() {
   const { user } = useUserContext();
@@ -23,7 +23,7 @@ function AppRoute() {
     queryKey: ["over-due-alert"],
     queryFn: async () => {
       const overDues = await _vehicleLogsService.GetUnregisterOverDues();
-      Toast(
+      if(overDues.length > 0){ Toast(
         <div>
           <strong>⚠️ Overdue Warning</strong>
           <div>
@@ -33,9 +33,10 @@ function AppRoute() {
             </div>
           </div>
         </div>,
-        { type: "error", autoClose: 7000 }
+        { type: "error", autoClose: 7000, pauseOnHover: false }
       );
       playAlertSound();
+    }
     },
     refetchInterval: 10000,
     staleTime:10000,
@@ -52,6 +53,10 @@ function AppRoute() {
           <Route
             path="/vehicle-management"
             element={<VehicleManagementPage />}
+          />
+           <Route
+            path="/black-listed"
+            element={<BlacklistedVehiclePage />}
           />
         </Route>
         <Route path="/login" element={<LoginPage />} />

@@ -6,7 +6,6 @@ export type VehiclesTbl = {
 	stickerNumber? : string;
 	registeredAt : Date;
 	vehicleType? : string;
-
 };
 
 export type VehicleDateRange = {

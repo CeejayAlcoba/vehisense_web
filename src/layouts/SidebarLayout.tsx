@@ -44,6 +44,12 @@ export type MenuItem = {
         label: "Register Vehicle",
         path: "/vehicle-management",
       },
+      {
+        key: "4",
+        icon: <TeamOutlined />,
+        label: "Black Listed",
+        path: "/black-listed",
+      },
   //   {
   //     key: "sub1",
   //     icon: <UserOutlined />,
