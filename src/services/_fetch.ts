@@ -1,12 +1,12 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import { TIMEOUT_REQUEST } from "../configs/request.config";
+import { LOCAL_BASE, ONLINE_BASE } from "../configs/baseurl.config";
 
-const LOCAL_BASE ="http://localhost:5044/api/";
-const ONLINE_BASE="https://vehisense-api.runasp.net/api/";
 
 const _fetch = axios.create({
-  baseURL: ONLINE_BASE,
-  timeout: 6000,
+  baseURL: LOCAL_BASE,
+  timeout: TIMEOUT_REQUEST,
   headers: { "X-Custom-Header": "foobar" },
 });
 

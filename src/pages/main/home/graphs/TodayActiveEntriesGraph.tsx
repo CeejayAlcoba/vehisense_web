@@ -3,6 +3,7 @@ import { Card } from "antd";
 import _vehicleLogsService from "../../../../services/VehicleLogsService";
 import { useQuery } from "@tanstack/react-query";
 import { getCurrentDateYMD } from "../../../../utils/dateTimeUtility";
+import { REFETCH_INTERVAL } from "../../../../configs/request.config";
 
 export default function TodayActiveEntriesGraph(){
   const {data:typeCount}=useQuery({
@@ -12,7 +13,7 @@ export default function TodayActiveEntriesGraph(){
       return res?.map(c=>({type:c.vehicleType,value:c.total}))
     },
     initialData:[],
-    refetchInterval:3000
+    refetchInterval:REFETCH_INTERVAL
   })
     const config = {
       data: typeCount,

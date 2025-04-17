@@ -38,6 +38,10 @@ class VehicleLogsService extends GenericService<VehicleLogs> {
         const {data:response} = await _fetch.get<VehicleLogs[]>(`${this.subdirectory}/exit?${params}`);
         return response;
     }
+    public async GetUnregisterOverDues(){
+        const {data:response} = await _fetch.get<VehicleLogs[]>(`${this.subdirectory}/unregister/over-dues`);
+        return response;
+    }
 
 
 }

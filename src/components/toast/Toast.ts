@@ -1,7 +1,7 @@
-import { toast, ToastOptions } from "react-toastify";
+import { toast, ToastContent, ToastOptions } from "react-toastify";
 
-export default function Toast(constent:string, options?:ToastOptions){
-    return toast(constent,{
+export default function Toast(content:ToastContent<unknown>, options?:ToastOptions){
+    return toast(content,{
         type:"success",
         ...options
     })

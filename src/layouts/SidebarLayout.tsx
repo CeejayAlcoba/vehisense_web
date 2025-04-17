@@ -41,7 +41,7 @@ export type MenuItem = {
     {
         key: "3",
         icon: <TeamOutlined />,
-        label: "Vehicle",
+        label: "Register Vehicle",
         path: "/vehicle-management",
       },
   //   {
