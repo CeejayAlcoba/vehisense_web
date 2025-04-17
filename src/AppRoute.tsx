@@ -22,6 +22,7 @@ function AppRoute() {
   useQuery({
     queryKey: ["over-due-alert"],
     queryFn: async () => {
+      if(!user) return;
       const overDues = await _vehicleLogsService.GetUnregisterOverDues();
       if(overDues.length > 0){ Toast(
         <div>

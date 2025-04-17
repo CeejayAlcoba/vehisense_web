@@ -5,7 +5,7 @@ import { LOCAL_BASE, ONLINE_BASE } from "../configs/baseurl.config";
 
 
 const _fetch = axios.create({
-  baseURL: LOCAL_BASE,
+  baseURL: ONLINE_BASE,
   timeout: TIMEOUT_REQUEST,
   headers: { "X-Custom-Header": "foobar" },
 });
