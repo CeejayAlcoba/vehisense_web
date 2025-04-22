@@ -1,11 +1,11 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { TIMEOUT_REQUEST } from "../configs/request.config";
-import { LOCAL_BASE, ONLINE_BASE } from "../configs/baseurl.config";
+import { LOCAL_BASE, LOCAL_IIS_BASE, ONLINE_BASE } from "../configs/baseurl.config";
 
 
 const _fetch = axios.create({
-  baseURL: ONLINE_BASE,
+  baseURL: LOCAL_IIS_BASE,
   timeout: TIMEOUT_REQUEST,
   headers: { "X-Custom-Header": "foobar" },
 });
