@@ -3,19 +3,11 @@ import { Badge, Card, Col, Row } from "antd";
 export default function MonitoringColorLegend() {
   return (
     <div
-      style={{
-        position: "absolute",
-        left: 0,
-        bottom: 0,
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 9999,
-      }}
+    className="mb-2"
     >
       <Card title="Color Legend" style={{ width: "200px" }}>
-        <Row gutter={16}>
-          <Col span={24}>
+        <Row gutter={10}>
+          <Col span={20}>
             <Badge color="red" count="UNREGISTERED" />
           </Col>
           <Col span={24}>

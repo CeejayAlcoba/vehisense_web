@@ -1,5 +1,5 @@
 
-import { VehicleLogs, VehicleLogsCountType, VehicleLogsDateRange } from "../types/VehicleLogs";
+import { VehicleLogs, VehicleLogsCountType, VehicleLogsDateRange, VehicleLogsWithHourSpent } from "../types/VehicleLogs";
 import objectToUrlParams from "../utils/objectToUrlParams";
 import _fetch from "./_fetch";
 import GenericService from "./genericService";
@@ -10,7 +10,7 @@ class VehicleLogsService extends GenericService<VehicleLogs> {
     }
     public async getAllAsync(data?: VehicleLogsDateRange){
         const params = objectToUrlParams(data);
-        const { data: response } = await _fetch.get<VehicleLogs[]>(`${this.subdirectory}/list?${params}`);
+        const { data: response } = await _fetch.get<VehicleLogsWithHourSpent[]>(`${this.subdirectory}/list?${params}`);
         return response;
     }
     public async CountByType(data?:VehicleLogsDateRange){

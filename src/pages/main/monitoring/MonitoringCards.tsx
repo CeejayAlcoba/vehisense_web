@@ -6,6 +6,7 @@ import {
   CheckCircleOutlined,
   ExportOutlined,
   StopOutlined,
+  CheckOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 
@@ -28,7 +29,9 @@ import Toast from "../../../components/toast/Toast";
 export default function MonitoringCards() {
   const dateToday = getCurrentDateYMD();
   const [form] = Form.useForm();
+  const [allowForm] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAllowModalOpen, setIsAllowModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState<VehicleLogs | null>(
     null
   );
@@ -57,6 +60,15 @@ export default function MonitoringCards() {
 
   const { entries, actives, exits, overDues } = data;
 
+    const entranceColumns = (data: any) => [
+    ...getColumns(data),
+    {
+      title: "Hours Spent",
+      dataIndex: "hoursSpent",
+      key: "hoursSpent",
+    },
+  ];
+
   const exitColumns = (data: any) => [
     ...getColumns(data),
     {
@@ -64,7 +76,7 @@ export default function MonitoringCards() {
       dataIndex: "exitTime",
       key: "exitTime",
       render: (text: any, record: any) => (
-        <TextColor isDanger={!record.isRegistered}>
+        <TextColor isDanger={!record.isRegistered && !record.isAllowed}>
           {formatTo12Hour(text)}
         </TextColor>
       ),
@@ -78,15 +90,28 @@ export default function MonitoringCards() {
       dataIndex: "action",
       key: "action",
       render: (_: any, record: VehicleLogs) => (
-        <Tooltip title="Add to Blacklisted">
-          <StopOutlined
-            style={{ color: "red", fontSize: 18, cursor: "pointer" }}
-            onClick={() => {
-              setSelectedRecord(record);
-              setIsModalOpen(true);
-            }}
-          />
-        </Tooltip>
+        <>
+          <Tooltip title="Add to Blacklisted">
+            <StopOutlined
+              style={{ color: "red", fontSize: 18, cursor: "pointer" }}
+              onClick={() => {
+                setSelectedRecord(record);
+                setIsModalOpen(true);
+              }}
+            />
+          </Tooltip>
+
+          <Tooltip title="Allow Entrance">
+            <CheckOutlined
+              className="text-primary"
+              style={{ fontSize: 18, cursor: "pointer" }}
+              onClick={() => {
+                setSelectedRecord(record);
+                setIsAllowModalOpen(true);
+              }}
+            />
+          </Tooltip>
+        </>
       ),
     },
   ];
@@ -110,10 +135,40 @@ export default function MonitoringCards() {
     }
   };
 
+  const handleAllowVehicle = async () => {
+    try {
+       const values = await allowForm.validateFields();
+      if (!selectedRecord) return;
+
+      const payload: VehicleLogs = {
+        ...selectedRecord,
+        isAllowed:true,
+        remarks:values.remarks
+      };
+      console.log(payload)
+      await _vehicleLogsService.updateAsync(
+        selectedRecord.id ?? 0,
+        payload
+      );
+      Toast("Vehicle has been allowed to entrance.");
+      allowForm.resetFields();
+      setIsAllowModalOpen(false);
+    } catch (err) {
+      console.log(err)
+      Toast("Blacklist failed:", { type: "error" });
+    }
+  };
+
   return (
     <>
       <Modal
-        title={<>Add to Blacklisted: Plate No. <strong>{selectedRecord?.plateNumber}</strong> - {selectedRecord?.vehicleType}</>}
+        title={
+          <>
+            Add to Blacklisted: Plate No.{" "}
+            <strong>{selectedRecord?.plateNumber}</strong> -{" "}
+            {selectedRecord?.vehicleType}
+          </>
+        }
         open={isModalOpen}
         onOk={handleBlacklist}
         onCancel={() => {
@@ -135,6 +190,35 @@ export default function MonitoringCards() {
           </Form.Item>
         </Form>
       </Modal>
+      <Modal
+        title={
+          <>
+            Allow vehicle to enter: Plate No.{" "}
+            <strong>{selectedRecord?.plateNumber}</strong> -{" "}
+            {selectedRecord?.vehicleType}
+          </>
+        }
+        open={isAllowModalOpen}
+        onOk={handleAllowVehicle}
+        okButtonProps={{htmlType:"submit"}}
+        onCancel={() => {
+          allowForm.resetFields();
+          setIsAllowModalOpen(false);
+        }}
+        okText="Allow"
+      >
+        <Form layout="vertical" form={allowForm}>
+          <Form.Item
+            name="remarks"
+            label="Remarks"
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="Enter remarks for allowing vehicle"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       <div className="row gap-3">
         <div className="col-xl-5">
@@ -147,7 +231,7 @@ export default function MonitoringCards() {
             }
           >
             <Table
-              columns={getColumns(entries)}
+              columns={entranceColumns(entries)}
               dataSource={entries}
               virtual
               pagination={false}

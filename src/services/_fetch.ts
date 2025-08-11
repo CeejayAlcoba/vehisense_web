@@ -5,23 +5,27 @@ import { LOCAL_BASE, LOCAL_IIS_BASE, ONLINE_BASE } from "../configs/baseurl.conf
 
 
 const _fetch = axios.create({
-  baseURL: LOCAL_IIS_BASE,
+  baseURL: LOCAL_BASE,
   timeout: TIMEOUT_REQUEST,
   headers: { "X-Custom-Header": "foobar" },
 });
 
-// Request Interceptor
 _fetch.interceptors.request.use(
   (config) => {
     config.headers["X-Custom-Header"] = "foobar";
+
+    const token = localStorage.getItem("token"); 
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+
     return config;
   },
   (error) => {
-    toast.error(error.response.data??error.message);
+    toast.error(error.response?.data ?? error.message);
     return Promise.reject(error);
   }
 );
-
 // Response Interceptor
 _fetch.interceptors.response.use(
   (response) => response,

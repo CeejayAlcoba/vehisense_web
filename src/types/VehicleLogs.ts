@@ -6,6 +6,8 @@ export type VehicleLogs = {
   exitTime?: Date;
   isRegistered: boolean;
   vehicleType?: string;
+  isAllowed?: boolean;
+  remarks?: boolean;
 };
 
 export type VehicleLogsTotal = {
@@ -14,10 +16,14 @@ export type VehicleLogsTotal = {
   unRegistered: number;
 };
 export type VehicleLogsDateRange = {
-  dateFrom?: Date | null |string;
-  dateTo?: Date | null|string;
+  dateFrom?: Date | null | string;
+  dateTo?: Date | null | string;
 };
 export type VehicleLogsCountType = {
   vehicleType: string;
   total: number;
 };
+
+export type VehicleLogsWithHourSpent = {
+  hoursSpent?: number;
+} & VehicleLogs;

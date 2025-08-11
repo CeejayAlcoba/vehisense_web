@@ -16,31 +16,43 @@ import Toast from "./components/toast/Toast";
 import _vehicleLogsService from "./services/VehicleLogsService";
 import { playAlertSound } from "./components/alertSound/playAlertSound";
 import BlacklistedVehiclePage from "./pages/main/blacklistedVehicle/BlacklistedVehiclePage";
+import SidebarPage from "./pages/main/sidebar/SidebarPage";
+import RolePage from "./pages/main/role/RolePage";
+import VehicleLogsReport from "./pages/main/report/VehicleLogsReport";
 
 function AppRoute() {
   const { user } = useUserContext();
   useQuery({
     queryKey: ["over-due-alert"],
     queryFn: async () => {
-      if(!user) return;
+      if (!user) return;
       const overDues = await _vehicleLogsService.GetUnregisterOverDues();
-      if(overDues.length > 0){ Toast(
-        <div>
-          <strong>⚠️ Overdue Warning</strong>
+      if (overDues.length > 0) {
+        Toast(
           <div>
-            Unregistered vehicles.
+            <strong>⚠️ Overdue Warning</strong>
             <div>
-            {overDues?.map((o) =><div className="flex gap-2"><span>Plate No:<strong>{o.plateNumber}</strong></span>{" - "}<span>{o.vehicleType}</span></div>) }
+              Unregistered vehicles.
+              <div>
+                {overDues?.map((o) => (
+                  <div className="flex gap-2">
+                    <span>
+                      Plate No:<strong>{o.plateNumber}</strong>
+                    </span>
+                    {" - "}
+                    <span>{o.vehicleType}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>,
-        { type: "error", autoClose: 7000, pauseOnHover: false }
-      );
-      playAlertSound();
-    }
+          </div>,
+          { type: "error", autoClose: 7000, pauseOnHover: false }
+        );
+        playAlertSound();
+      }
     },
     refetchInterval: 10000,
-    staleTime:10000,
+    staleTime: 10000,
   });
   return (
     <Router>
@@ -55,10 +67,10 @@ function AppRoute() {
             path="/vehicle-management"
             element={<VehicleManagementPage />}
           />
-           <Route
-            path="/black-listed"
-            element={<BlacklistedVehiclePage />}
-          />
+          <Route path="/black-listed" element={<BlacklistedVehiclePage />} />
+          <Route path="/sidebar" element={<SidebarPage />} />
+          <Route path="/role" element={<RolePage />} />
+          <Route path="/report" element={<VehicleLogsReport />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
       </Routes>

@@ -12,7 +12,7 @@ export const getColumns = (data: any) => {
       dataIndex: "plateNumber",
       key: "plateNumber",
       render: (text: any, record: VehicleLogs) => (
-        <TextColor isDanger={!record.isRegistered}>{text}</TextColor>
+        <TextColor isDanger={!record.isRegistered  && !record.isAllowed}>{text}</TextColor>
       ),
     },
     {
@@ -20,7 +20,7 @@ export const getColumns = (data: any) => {
       dataIndex: "vehicleType",
       key: "vehicleType",
       render: (text: any, record: VehicleLogs) => (
-        <TextColor isDanger={!record.isRegistered}>{text}</TextColor>
+        <TextColor isDanger={!record.isRegistered && !record.isAllowed }>{text}</TextColor>
       ),
     },
     {
@@ -28,7 +28,7 @@ export const getColumns = (data: any) => {
       dataIndex: "entryTime",
       key: "entryTime",
       render: (values: string, record: VehicleLogs) => (
-        <TextColor isDanger={!record.isRegistered}>
+        <TextColor isDanger={!record.isRegistered && !record.isAllowed }>
           {formatTo12Hour(values)}
         </TextColor>
       ),
@@ -38,10 +38,11 @@ export const getColumns = (data: any) => {
 export default function MonitoringPage() {
   return (
     <>
+    <MonitoringColorLegend />
       <div style={{ marginBottom: "200px" }}>
         <MonitoringCards />
       </div>
-      <MonitoringColorLegend />
+      
     </>
   );
 }

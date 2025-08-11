@@ -4,14 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getCurrentDateYMD } from "../../../../utils/dateTimeUtility";
 import _vehicleLogsService from "../../../../services/VehicleLogsService";
 import { REFETCH_INTERVAL } from "../../../../configs/request.config";
+import { VehicleLogsDateRange } from "../../../../types/VehicleLogs";
 
-export default function TodayTotalLogsGraph() {
+export default function TodayTotalLogsGraph(props:VehicleLogsDateRange ) {
   const { data: typeCount } = useQuery({
-    queryKey: ["typeCount"],
+    queryKey: ["typeCount",props.dateFrom,props.dateTo],
     queryFn: async () => {
-      const res = await _vehicleLogsService.CountByType({
-        dateFrom: getCurrentDateYMD(),
-      });
+      const res = await _vehicleLogsService.CountByType(props);
       return res?.map((c) => ({ type: c.vehicleType, value: c.total }));
     },
     initialData: [],
@@ -44,7 +43,7 @@ export default function TodayTotalLogsGraph() {
   };
   const total = typeCount.reduce((curr, val) => (curr += val.value), 0);
   return (
-    <Card title={`Total Today (${total})`}>
+    <Card title={`Total (${total})`}>
       <Bar {...config} />
     </Card>
   );

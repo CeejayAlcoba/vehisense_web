@@ -2,14 +2,14 @@ import { Bar } from "@ant-design/charts";
 import { Card } from "antd";
 import _vehicleLogsService from "../../../../services/VehicleLogsService";
 import { useQuery } from "@tanstack/react-query";
-import { getCurrentDateYMD } from "../../../../utils/dateTimeUtility";
 import { REFETCH_INTERVAL } from "../../../../configs/request.config";
+import { VehicleLogsDateRange } from "../../../../types/VehicleLogs";
 
-export default function TodayActiveEntriesGraph(){
+export default function TodayActiveEntriesGraph(props:VehicleLogsDateRange ){
   const {data:typeCount}=useQuery({
-    queryKey:["activeEntries"],
+    queryKey:["activeEntries",props],
     queryFn: async()=>{
-      const res = await _vehicleLogsService.GetActiveEntriesByType({dateFrom:getCurrentDateYMD()});
+      const res = await _vehicleLogsService.GetActiveEntriesByType(props);
       return res?.map(c=>({type:c.vehicleType,value:c.total}))
     },
     initialData:[],
@@ -42,7 +42,7 @@ export default function TodayActiveEntriesGraph(){
     };
     const total =typeCount.reduce((curr,val)=>curr +=val.value ,0)
      return (
-      <Card title={`Active Entries Today (${total})`}>
+      <Card title={`Active Entries (${total})`}>
         <Bar {...config} />
       </Card>
      )

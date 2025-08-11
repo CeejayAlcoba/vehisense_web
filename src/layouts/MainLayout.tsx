@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Breadcrumb, Layout,  theme } from "antd";
 import { Outlet, useLocation } from "react-router-dom";
 import HeaderLayout from "./HeaderLayout";
-import SidebarLayout, { getActiveMenu, sidebarItems } from "./SidebarLayout";
+import SidebarLayout, { getActiveMenu } from "./SidebarLayout";
 import Title from "antd/es/typography/Title";
 
 const { Content } = Layout;
@@ -14,7 +14,7 @@ export default function MainLayout() {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
  
-  const activeMenu = getActiveMenu(sidebarItems)
+  // const activeMenu = getActiveMenu(sidebarItems)
   return (
     <Layout style={{ height: "100vh" }}>
       <SidebarLayout collapsed={collapsed} />
@@ -30,11 +30,11 @@ export default function MainLayout() {
           }}
         >
 
-          {activeMenu?.label && (
+          {/* {activeMenu?.label && (
             <Title level={4} style={{ marginBottom: 24 }}>
               {activeMenu?.label}
             </Title>
-          )}
+          )} */}
           <Outlet />
         </Content>
       </Layout>
