@@ -7,7 +7,7 @@ export type VehicleLogs = {
   isRegistered: boolean;
   vehicleType?: string;
   isAllowed?: boolean;
-  remarks?: boolean;
+  remarks?: boolean
 };
 
 export type VehicleLogsTotal = {

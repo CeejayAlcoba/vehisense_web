@@ -19,22 +19,33 @@ import BlacklistedVehiclePage from "./pages/main/blacklistedVehicle/BlacklistedV
 import SidebarPage from "./pages/main/sidebar/SidebarPage";
 import RolePage from "./pages/main/role/RolePage";
 import VehicleLogsReport from "./pages/main/report/VehicleLogsReport";
+import AuditLogsPage from "./pages/main/auditLogs/AuditLogsPage";
+import { useState } from "react";
+import { _indexDbService, indexDbService } from "./services/indexDBService";
 
 function AppRoute() {
   const { user } = useUserContext();
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   useQuery({
     queryKey: ["over-due-alert"],
     queryFn: async () => {
-      if (!user) return;
+      if (!user) return [];
       const overDues = await _vehicleLogsService.GetUnregisterOverDues();
-      if (overDues.length > 0) {
+      const idbOverDues = await indexDbService.getSingleItemByFilter(
+        "vehicleLogs",
+        (c) => c.id == 1
+      );
+      const idbIds = new Set(idbOverDues?.vehicleLogs?.map((d: any) => d.id));
+
+      const overdueFilter = overDues.filter((o) => !idbIds.has(o.id));
+      if (overdueFilter.length > 0 && !isOpen) {
         Toast(
           <div>
             <strong>⚠️ Overdue Warning</strong>
             <div>
               Unregistered vehicles.
               <div>
-                {overDues?.map((o) => (
+                {overdueFilter?.map((o) => (
                   <div className="flex gap-2">
                     <span>
                       Plate No:<strong>{o.plateNumber}</strong>
@@ -46,10 +57,25 @@ function AppRoute() {
               </div>
             </div>
           </div>,
-          { type: "error", autoClose: 7000, pauseOnHover: false }
+          {
+            type: "error",
+            autoClose: false,
+            pauseOnHover: false,
+            onClose: async () => {
+              setIsOpen(false);
+              await indexDbService.upsertItem("vehicleLogs", {
+                vehicleLogs: overDues,
+                id: 1,
+              });
+            },
+            onOpen: () => {
+              setIsOpen(true);
+            },
+          }
         );
         playAlertSound();
       }
+       return [];
     },
     refetchInterval: 10000,
     staleTime: 10000,
@@ -71,6 +97,7 @@ function AppRoute() {
           <Route path="/sidebar" element={<SidebarPage />} />
           <Route path="/role" element={<RolePage />} />
           <Route path="/report" element={<VehicleLogsReport />} />
+          <Route path="/audit-logs" element={<AuditLogsPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
       </Routes>

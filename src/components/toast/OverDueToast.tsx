@@ -3,7 +3,7 @@ import { toast, ToastOptions } from "react-toastify";
 export function notifyUnregisteredOverdue(isCritical: boolean) {
   const baseOptions: ToastOptions<unknown> = {
     position: "top-right",
-    autoClose: 5000,
+    autoClose: false, // disable auto close
     hideProgressBar: false,
     closeOnClick: false,
     pauseOnHover: true,
@@ -11,6 +11,8 @@ export function notifyUnregisteredOverdue(isCritical: boolean) {
     progress: undefined,
     theme: "colored",
     closeButton: false,
+    onOpen: () => console.log("appear"),
+    onClose: () => console.log("closed"),
   };
 
   const content = isCritical ? (
