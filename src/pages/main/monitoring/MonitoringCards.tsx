@@ -66,15 +66,19 @@ export default function MonitoringCards() {
 
   const { entries, actives, exits, overDues } = data;
 
-    const entranceColumns = (data: any) => [
+  const entranceColumns = (data: any) => [
     ...getColumns(data),
     {
       title: "Hours Spent",
       dataIndex: "hoursSpent",
       key: "hoursSpent",
-      render:(value:number,record:VehicleLogs)=><TextColor isDanger={!record.isRegistered && !record.isAllowed }>{value}</TextColor>
+      render: (value: number, record: VehicleLogs) => (
+        <TextColor isDanger={!record.isRegistered && !record.isAllowed}>
+          {value}
+        </TextColor>
+      ),
     },
-     {
+    {
       title: "Time Spent",
       key: "liveTime",
       render: (_: any, record: VehicleLogs) => {
@@ -83,7 +87,7 @@ export default function MonitoringCards() {
         const entry = dayjs.utc(record.entryTime).local();
         const end = record.exitTime
           ? dayjs.utc(record.exitTime).local()
-          : dayjs(); 
+          : dayjs();
 
         const seconds = end.diff(entry, "second");
 
@@ -91,11 +95,41 @@ export default function MonitoringCards() {
         const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
         const ss = String(seconds % 60).padStart(2, "0");
 
-        return  <TextColor isDanger={!record.isRegistered && !record.isAllowed }>{`${hh}:${mm}:${ss}`}</TextColor>;
+        return (
+          <TextColor
+            isDanger={!record.isRegistered && !record.isAllowed}
+          >{`${hh}:${mm}:${ss}`}</TextColor>
+        );
       },
-  },
+    },
   ];
+  const activeColumns = (data: any) => [
+    ...getColumns(data),
+    {
+      title: "Time Spent",
+      key: "liveTime",
+      render: (_: any, record: VehicleLogs) => {
+        if (!record.entryTime) return "-";
 
+        const entry = dayjs.utc(record.entryTime).local();
+        const end = record.exitTime
+          ? dayjs.utc(record.exitTime).local()
+          : dayjs();
+
+        const seconds = end.diff(entry, "second");
+
+        const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
+        const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+        const ss = String(seconds % 60).padStart(2, "0");
+
+        return (
+          <TextColor
+            isDanger={!record.isRegistered && !record.isAllowed}
+          >{`${hh}:${mm}:${ss}`}</TextColor>
+        );
+      },
+    },
+  ];
   const exitColumns = (data: any) => [
     ...getColumns(data),
     {
@@ -164,24 +198,21 @@ export default function MonitoringCards() {
 
   const handleAllowVehicle = async () => {
     try {
-       const values = await allowForm.validateFields();
+      const values = await allowForm.validateFields();
       if (!selectedRecord) return;
 
       const payload: VehicleLogs = {
         ...selectedRecord,
-        isAllowed:true,
-        remarks:values.remarks
+        isAllowed: true,
+        remarks: values.remarks,
       };
-      console.log(payload)
-      await _vehicleLogsService.updateAsync(
-        selectedRecord.id ?? 0,
-        payload
-      );
+      console.log(payload);
+      await _vehicleLogsService.updateAsync(selectedRecord.id ?? 0, payload);
       Toast("Vehicle has been allowed to entrance.");
       allowForm.resetFields();
       setIsAllowModalOpen(false);
     } catch (err) {
-      console.log(err)
+      console.log(err);
       Toast("Blacklist failed:", { type: "error" });
     }
   };
@@ -227,7 +258,7 @@ export default function MonitoringCards() {
         }
         open={isAllowModalOpen}
         onOk={handleAllowVehicle}
-        okButtonProps={{htmlType:"submit"}}
+        okButtonProps={{ htmlType: "submit" }}
         onCancel={() => {
           allowForm.resetFields();
           setIsAllowModalOpen(false);
@@ -235,10 +266,7 @@ export default function MonitoringCards() {
         okText="Allow"
       >
         <Form layout="vertical" form={allowForm}>
-          <Form.Item
-            name="remarks"
-            label="Remarks"
-          >
+          <Form.Item name="remarks" label="Remarks">
             <Input.TextArea
               rows={3}
               placeholder="Enter remarks for allowing vehicle"
@@ -296,7 +324,7 @@ export default function MonitoringCards() {
             }
           >
             <Table
-              columns={getColumns(actives)}
+              columns={activeColumns(actives)}
               dataSource={actives}
               virtual
               pagination={false}
