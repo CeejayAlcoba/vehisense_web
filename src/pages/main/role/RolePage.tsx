@@ -1,35 +1,51 @@
 import { useState } from "react";
-import { Table, Drawer, Select, Button, Space, Tooltip } from "antd";
+import {
+  Table,
+  Drawer,
+  Select,
+  Button,
+  Space,
+  Tooltip,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+} from "antd";
 import { useQuery } from "@tanstack/react-query";
-import { SettingOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  SettingOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import _roleService from "../../../services/roleService";
 import _sidebarService from "../../../services/sidebarService";
 import _sidebarRoleMappingService from "../../../services/sidebarRoleMappingService";
 import { SidebarRoleMapping } from "../../../types/SidebarRoleMapping";
 import Toast from "../../../components/toast/Toast";
 import { Sidebar } from "../../../types/Sidebar";
-// assuming you have a role service
 
 export default function RolePage() {
   const [selectedRole, setSelectedRole] = useState<number | null>(null);
   const [selectedSidebarIds, setSelectedSidebarIds] = useState<number[]>([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-  // Fetch roles
-  const { data: roles } = useQuery({
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<any>(null);
+  const [form] = Form.useForm();
+
+  const { data: roles, refetch: refetchRoles } = useQuery({
     queryKey: ["roles"],
     queryFn: async () => await _roleService.getAllAsync(),
     initialData: [],
   });
 
-  // Fetch all sidebars
   const { data: allSidebars } = useQuery({
     queryKey: ["sidebars"],
     queryFn: async () => await _sidebarService.getAllAsync(),
     initialData: [],
   });
 
-  // Fetch mappings for the selected role
   const { refetch: refetchMappings } = useQuery({
     queryKey: ["sidebar-role-mappings", selectedRole],
     queryFn: async () => {
@@ -45,15 +61,52 @@ export default function RolePage() {
     enabled: false,
   });
 
-  // Open drawer & load mappings
+  const openAddRoleModal = () => {
+    setEditingRole(null);
+    form.resetFields();
+    setIsRoleModalOpen(true);
+  };
+
+  const openEditRoleModal = (role: any) => {
+    setEditingRole(role);
+    form.setFieldsValue(role);
+    setIsRoleModalOpen(true);
+  };
+
+  const handleSaveRole = async () => {
+    try {
+      const values = await form.validateFields();
+      if (editingRole) {
+        await _roleService.updateAsync(editingRole.id, values);
+        Toast("Role updated successfully");
+      } else {
+        await _roleService.insertAsync(values);
+        Toast("Role added successfully");
+      }
+      setIsRoleModalOpen(false);
+      refetchRoles();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeleteRole = async (roleId: number) => {
+    try {
+      await _roleService.deleteByIdAsync(roleId);
+      Toast("Role deleted successfully");
+      refetchRoles();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleManageClick = async (roleId: number) => {
-    await setSelectedRole(roleId);
+    setSelectedRole(roleId);
     setDrawerVisible(true);
     await refetchMappings();
   };
 
-  // Save mappings
-  const handleSave = async () => {
+  const handleSaveSidebarMappings = async () => {
     if (!selectedRole) return;
     const payload: SidebarRoleMapping[] = selectedSidebarIds.map(
       (sidebarId) => ({
@@ -61,7 +114,6 @@ export default function RolePage() {
         sidebarId,
       })
     );
-
     await _sidebarRoleMappingService.mergeAsync(payload);
     Toast("Mappings updated successfully");
     setDrawerVisible(false);
@@ -77,20 +129,68 @@ export default function RolePage() {
       title: "Actions",
       key: "actions",
       render: (_: any, record: any) => (
-        <Tooltip title="Manage Sidebar Items">
-          <Button
-            icon={<SettingOutlined />}
-            onClick={() => handleManageClick(record.id)}
-          />
-        </Tooltip>
+        <Space>
+          <Tooltip title="Edit Role">
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => openEditRoleModal(record)}
+            />
+          </Tooltip>
+          <Tooltip title="Manage Sidebar Items">
+            <Button
+              icon={<SettingOutlined />}
+              onClick={() => handleManageClick(record.id)}
+            />
+          </Tooltip>
+          <Popconfirm
+            title="Are you sure to delete this role?"
+            onConfirm={() => handleDeleteRole(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Tooltip title="Delete Role">
+              <Button danger icon={<DeleteOutlined />} />
+            </Tooltip>
+          </Popconfirm>
+        </Space>
       ),
     },
   ];
 
   return (
     <div>
+      <Space style={{ marginBottom: 16 }}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={openAddRoleModal}
+        >
+          Add Role
+        </Button>
+      </Space>
+
       <Table columns={columns} dataSource={roles} rowKey="id" />
 
+      {/* Role Add/Update Modal */}
+      <Modal
+        title={editingRole ? "Update Role" : "Add Role"}
+        open={isRoleModalOpen}
+        onCancel={() => setIsRoleModalOpen(false)}
+        onOk={handleSaveRole}
+        okText="Save"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Role Name"
+            name="name"
+            rules={[{ required: true, message: "Please enter role name" }]}
+          >
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Sidebar Mapping Drawer */}
       <Drawer
         title={`Manage Sidebar Items for Role`}
         open={drawerVisible}
@@ -99,7 +199,7 @@ export default function RolePage() {
         extra={
           <Space>
             <Button onClick={() => setDrawerVisible(false)}>Cancel</Button>
-            <Button type="primary" onClick={handleSave}>
+            <Button type="primary" onClick={handleSaveSidebarMappings}>
               Save
             </Button>
           </Space>

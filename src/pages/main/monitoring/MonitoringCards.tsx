@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, Tooltip, Modal, Form, Input, message } from "antd";
 import {
   CarOutlined,
@@ -9,7 +9,6 @@ import {
   CheckOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-
 import Table from "../../../components/table/Table";
 import TextColor from "../../../components/text/TextColor";
 import _vehicleLogsService from "../../../services/VehicleLogsService";
@@ -22,9 +21,12 @@ import {
 } from "../../../utils/dateTimeUtility";
 import { REFETCH_INTERVAL } from "../../../configs/request.config";
 
+import utc from "dayjs/plugin/utc";
 import { VehicleLogs } from "../../../types/VehicleLogs";
 import { BlacklistedVehicles } from "../../../types/BlacklistedVehicles";
 import Toast from "../../../components/toast/Toast";
+import dayjs from "dayjs";
+dayjs.extend(utc);
 
 export default function MonitoringCards() {
   const dateToday = getCurrentDateYMD();
@@ -35,7 +37,11 @@ export default function MonitoringCards() {
   const [selectedRecord, setSelectedRecord] = useState<VehicleLogs | null>(
     null
   );
-
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
   const { data } = useQuery({
     queryKey: ["data"],
     queryFn: async () => {
@@ -66,7 +72,28 @@ export default function MonitoringCards() {
       title: "Hours Spent",
       dataIndex: "hoursSpent",
       key: "hoursSpent",
+      render:(value:number,record:VehicleLogs)=><TextColor isDanger={!record.isRegistered && !record.isAllowed }>{value}</TextColor>
     },
+     {
+      title: "Time Spent",
+      key: "liveTime",
+      render: (_: any, record: VehicleLogs) => {
+        if (!record.entryTime) return "-";
+
+        const entry = dayjs.utc(record.entryTime).local();
+        const end = record.exitTime
+          ? dayjs.utc(record.exitTime).local()
+          : dayjs(); 
+
+        const seconds = end.diff(entry, "second");
+
+        const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
+        const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+        const ss = String(seconds % 60).padStart(2, "0");
+
+        return  <TextColor isDanger={!record.isRegistered && !record.isAllowed }>{`${hh}:${mm}:${ss}`}</TextColor>;
+      },
+  },
   ];
 
   const exitColumns = (data: any) => [

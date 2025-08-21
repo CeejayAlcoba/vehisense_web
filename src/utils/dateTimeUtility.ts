@@ -1,37 +1,38 @@
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 export function getCurrentDateYMD() {
-    const now = new Date(Date.now());
-  
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-  
-    return `${year}-${month}-${day}`;
-  }
+  const now = new Date(Date.now());
 
-  export const formatTo12Hour = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  };
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
 
-  export const formatTo12HourWithDate = (isoString: string) => {
-    const date = new Date(isoString);
-  
-    const datePart = date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-  
-    const timePart = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  
-    return `${datePart} ${timePart}`;
-  };
-  
+  return `${year}-${month}-${day}`;
+}
+
+
+
+export const formatTo12Hour = (dateString?: string) => {
+  if (!dateString) return "-";
+  return dayjs.utc(dateString).local().format("hh:mm A");
+};
+
+export const formatTo12HourWithDate = (isoString: string) => {
+  const date = new Date(isoString);
+
+  const datePart = date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  const timePart = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  return `${datePart} ${timePart}`;
+};
