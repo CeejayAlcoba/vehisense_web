@@ -3,6 +3,7 @@ import { Card, Spin, Alert, Modal, Descriptions, Button } from "antd";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import _vehicleRegistrationService from "../../../services/vehicleRegistrationService";
 import { VehicleRegistration } from "../../../types/VehicleRegistration";
+import { ReloadOutlined } from "@ant-design/icons";
 
 const VehicleQrScanner: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -10,7 +11,7 @@ const VehicleQrScanner: React.FC = () => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [scannerKey, setScannerKey] = useState(0); 
+  const [scannerKey, setScannerKey] = useState(0);
 
   const handleScan = async (qrId: string) => {
     if (!qrId) return;
@@ -41,7 +42,7 @@ const VehicleQrScanner: React.FC = () => {
     setVehicle(null);
     setPdfUrl(null);
     setIsModalVisible(false);
-    setScannerKey((prev) => prev + 1); 
+    setScannerKey((prev) => prev + 1);
   };
 
   return (
@@ -55,7 +56,7 @@ const VehicleQrScanner: React.FC = () => {
               handleScan(id);
             }
           }}
-          onError={(err:any) => setError("QR Scan failed: " + err.message)}
+          onError={(err: any) => setError("QR Scan failed: " + err.message)}
           components={{ finder: true }}
           styles={{ container: { width: "300px", borderRadius: "12px" } }}
         />
@@ -70,6 +71,20 @@ const VehicleQrScanner: React.FC = () => {
           showIcon
           closable
           style={{ marginTop: 16 }}
+          action={
+            <Button
+              type="primary"
+              icon={<ReloadOutlined />}
+              size="small"
+              style={{ borderRadius: 6 }}
+              onClick={() => {
+                setScannerKey((prev) => prev + 1);
+                setError(null);
+              }}
+            >
+              Scan Again
+            </Button>
+          }
         />
       )}
 
@@ -81,12 +96,8 @@ const VehicleQrScanner: React.FC = () => {
           <Button key="close" onClick={handleCloseModal}>
             Close
           </Button>,
-          <Button
-            key="open"
-            type="primary"
-            onClick={() => {}}
-          >
-           Approve
+          <Button key="open" type="primary" onClick={() => {}}>
+            Approve
           </Button>,
         ]}
         width="80%"
