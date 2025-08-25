@@ -9,19 +9,23 @@ import {
   Alert,
   Tag,
   theme,
+  Typography,
 } from "antd";
 import {
   UserOutlined,
   LockOutlined,
   EyeTwoTone,
   EyeInvisibleOutlined,
+  CarOutlined,
 } from "@ant-design/icons";
-import "./Login.css"; // We'll create this next
+import "./Login.css";
 import { LoginPayload } from "../../../types/Login";
 import useUserContext from "../../../useUserContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import _accountService from "../../../services/accounservice";
+import _accountService from "../../../services/accounService";
+
+const { Text, Link } = Typography;
 
 const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
@@ -29,9 +33,10 @@ const LoginPage = () => {
   const { token } = theme.useToken();
   const { setUser } = useUserContext();
   const navigate = useNavigate();
+
   const onFinish = async (values: any) => {
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
       setErrorMessage("");
       const response = await _accountService.login(values as LoginPayload);
       if (!response.user) return;
@@ -43,17 +48,25 @@ const LoginPage = () => {
     } catch (err: any) {
       setErrorMessage(err.response?.data ?? err.message ?? "");
     }
-    setIsSubmitting(false)
+    setIsSubmitting(false);
   };
 
   return (
     <div className="login-container">
-      <Card className="login-card">
-        <div className="login-header">
-          <Tag bordered={false}>Welcome Back</Tag>
-          <h2 style={{ color: token.colorPrimary }}>Welcome Back</h2>
-          <p>Please login to your account</p>
+      <Card className="login-card" style={{ borderRadius: 16, padding: 32 }}>
+        <div
+          className="login-header"
+          style={{ textAlign: "center", marginBottom: 24 }}
+        >
+          <Tag bordered={false} color="blue" style={{ fontSize: 16 }}>
+            Welcome Back
+          </Tag>
+          <h2 style={{ color: token.colorPrimary }}>Sign in to Your Account</h2>
+          <p style={{ color: token.colorTextSecondary }}>
+            Please login to access your dashboard
+          </p>
         </div>
+
         {errorMessage && (
           <Alert
             message={errorMessage}
@@ -62,14 +75,17 @@ const LoginPage = () => {
             style={{ marginBottom: 16 }}
           />
         )}
+
         <Form
           name="normal_login"
           className="login-form"
           initialValues={{ remember: true }}
-          onFinish={async(value:any)=>await onFinish(value)}
+          onFinish={async (value: any) => await onFinish(value)}
+          layout="vertical"
         >
           <Form.Item
             name="username"
+            label="Username"
             rules={[{ required: true, message: "Please input your Username!" }]}
           >
             <Input
@@ -81,6 +97,7 @@ const LoginPage = () => {
 
           <Form.Item
             name="password"
+            label="Password"
             rules={[{ required: true, message: "Please input your Password!" }]}
           >
             <Input.Password
@@ -98,9 +115,13 @@ const LoginPage = () => {
               <Checkbox>Remember me</Checkbox>
             </Form.Item>
 
-            <a className="login-form-forgot" href="#">
+            <Link
+              className="login-form-forgot"
+              style={{ float: "right" }}
+              href="#"
+            >
               Forgot password?
-            </a>
+            </Link>
           </Form.Item>
 
           <Form.Item>
@@ -108,14 +129,37 @@ const LoginPage = () => {
               loading={isSubmitting}
               type="primary"
               htmlType="submit"
-              className="login-form-button"
               size="large"
               block
+              style={{ borderRadius: 8 }}
             >
               Log in
             </Button>
           </Form.Item>
         </Form>
+
+        <Divider>Or</Divider>
+
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <Button
+            type="default"
+            icon={<CarOutlined />}
+            size="large"
+            style={{ borderRadius: 8 }}
+            onClick={() => navigate("/vehicle-registration")}
+          >
+            Go to Vehicle Registration
+          </Button>
+          <Text
+            style={{
+              display: "block",
+              marginTop: 8,
+              color: token.colorTextSecondary,
+            }}
+          >
+            Want to register a vehicle?
+          </Text>
+        </div>
       </Card>
     </div>
   );

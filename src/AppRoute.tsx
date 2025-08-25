@@ -22,6 +22,8 @@ import VehicleLogsReport from "./pages/main/report/VehicleLogsReport";
 import AuditLogsPage from "./pages/main/auditLogs/AuditLogsPage";
 import { useState } from "react";
 import { _indexDbService, indexDbService } from "./services/indexDBService";
+import VehicleRegistrationForm from "./pages/public/vehicleRegistration/VehicleRegistrationForm";
+import VehicleQrScanner from "./pages/main/vehicleQrScanner/VehicleQrScanner";
 
 function AppRoute() {
   const { user } = useUserContext();
@@ -75,7 +77,7 @@ function AppRoute() {
         );
         playAlertSound();
       }
-       return [];
+      return [];
     },
     refetchInterval: 10000,
     staleTime: 10000,
@@ -97,9 +99,11 @@ function AppRoute() {
           <Route path="/sidebar" element={<SidebarPage />} />
           <Route path="/role" element={<RolePage />} />
           <Route path="/report" element={<VehicleLogsReport />} />
+          <Route path="/qr-scanner" element={<VehicleQrScanner />} />
           <Route path="/audit-logs" element={<AuditLogsPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/vehicle-registration" element={<VehicleRegistrationForm />} />
       </Routes>
     </Router>
   );

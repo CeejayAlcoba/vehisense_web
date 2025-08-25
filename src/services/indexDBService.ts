@@ -1,12 +1,17 @@
 import { openDB, IDBPDatabase, DBSchema } from "idb";
 import { VehicleLogs } from "../types/VehicleLogs";
+import { VehicleRegistration } from "../types/VehicleRegistration";
 
-type StoreName = "vehicleLogs";
+type StoreName = "vehicleLogs" | "vehicleRegistration";
 
 export interface MyDB extends DBSchema {
   vehicleLogs: {
     key: number;
     value: { vehicleLogs: VehicleLogs[]; id: number };
+  };
+  vehicleRegistration: {
+    key: number;
+    value: { registration: VehicleRegistration; id: number };
   };
 }
 
@@ -17,6 +22,9 @@ export function initDB() {
     upgrade(db) {
       if (!db.objectStoreNames.contains("vehicleLogs")) {
         db.createObjectStore("vehicleLogs", { keyPath: "id" });
+      }
+      if (!db.objectStoreNames.contains("vehicleRegistration")) {
+        db.createObjectStore("vehicleRegistration", { keyPath: "id" });
       }
     },
   });
