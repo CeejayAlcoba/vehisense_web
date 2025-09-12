@@ -3,8 +3,8 @@ export type VehiclesTbl = {
  	id? : number;
 	plateNumber : string;
 	owner : string;
-	stickerNumber? : string;
-	registeredAt : Date;
+	stickerNumber : string;
+	registeredAt? : Date;
 	vehicleType? : string;
 };
 

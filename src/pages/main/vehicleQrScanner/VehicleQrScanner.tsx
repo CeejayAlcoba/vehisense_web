@@ -1,9 +1,20 @@
 import React, { useState } from "react";
-import { Card, Spin, Alert, Modal, Descriptions, Button } from "antd";
+import {
+  Card,
+  Spin,
+  Alert,
+  Modal,
+  Descriptions,
+  Button,
+  message,
+  Input,
+} from "antd";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import _vehicleRegistrationService from "../../../services/vehicleRegistrationService";
 import { VehicleRegistration } from "../../../types/VehicleRegistration";
 import { ReloadOutlined } from "@ant-design/icons";
+import _vehicleService from "../../../services/vehicleService";
+import { AxiosError } from "axios";
 
 const VehicleQrScanner: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -12,6 +23,8 @@ const VehicleQrScanner: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [scannerKey, setScannerKey] = useState(0);
+  const [isApproveModalVisible, setIsApproveModalVisible] = useState(false);
+  const [stickerNumber, setStickerNumber] = useState("");
 
   const handleScan = async (qrId: string) => {
     if (!qrId) return;
@@ -43,6 +56,28 @@ const VehicleQrScanner: React.FC = () => {
     setPdfUrl(null);
     setIsModalVisible(false);
     setScannerKey((prev) => prev + 1);
+  };
+
+  const handleApprove = async () => {
+    try{
+ await _vehicleService.insertAsync({
+      plateNumber: vehicle?.plateNumber ?? "",
+      owner: vehicle?.ownerName ?? "",
+      vehicleType: vehicle?.vehicleType ?? "",
+      stickerNumber,
+    });
+    message.success("Successfully approved");
+    }
+    catch(e:any){
+      const ex:AxiosError = e;
+       message.error(ex.response?.data as string ||  "Request failed");
+    }
+   
+  };
+
+  const handleApproveClick = () => {
+    setStickerNumber("");
+    setIsApproveModalVisible(true);
   };
 
   return (
@@ -96,7 +131,11 @@ const VehicleQrScanner: React.FC = () => {
           <Button key="close" onClick={handleCloseModal}>
             Close
           </Button>,
-          <Button key="open" type="primary" onClick={() => {}}>
+          <Button
+            key="open"
+            type="primary"
+            onClick={() => handleApproveClick()}
+          >
             Approve
           </Button>,
         ]}
@@ -130,6 +169,26 @@ const VehicleQrScanner: React.FC = () => {
             title="Vehicle OR/CR PDF"
           />
         )}
+      </Modal>
+      <Modal
+        open={isApproveModalVisible}
+        title="Approve Vehicle"
+        onCancel={() => setIsApproveModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setIsApproveModalVisible(false)}>
+            Cancel
+          </Button>,
+          <Button key="ok" type="primary" onClick={handleApprove}  disabled={!stickerNumber}>
+            Approve
+          </Button>,
+        ]}
+      >
+        <p>Please enter the sticker number for this vehicle:</p>
+        <Input
+          value={stickerNumber}
+          onChange={(e) => setStickerNumber(e.target.value)}
+          placeholder="Sticker Number"
+        />
       </Modal>
     </Card>
   );
