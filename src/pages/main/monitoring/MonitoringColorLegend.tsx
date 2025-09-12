@@ -5,7 +5,7 @@ export default function MonitoringColorLegend() {
     <div
     className="mb-2"
     >
-      <Card title="Color Legend" style={{ width: "200px" }}>
+      <Card style={{ width: "200px" }}>
         <Row gutter={10}>
           <Col span={20}>
             <Badge color="red" count="UNREGISTERED" />

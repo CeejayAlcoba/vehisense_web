@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Button, DatePicker, Table, Space, message, Tag } from "antd";
+import { Button, DatePicker, Table, Space, message, Tag, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
   DownloadOutlined,
@@ -11,7 +11,11 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useReactToPrint } from "react-to-print";
 import _vehicleLogsService from "../../../services/VehicleLogsService";
-import { VehicleLogs, VehicleLogsDateRange, VehicleLogsWithHourSpent } from "../../../types/VehicleLogs";
+import {
+  VehicleLogs,
+  VehicleLogsDateRange,
+  VehicleLogsWithHourSpent,
+} from "../../../types/VehicleLogs";
 
 const { RangePicker } = DatePicker;
 
@@ -19,6 +23,7 @@ const VehicleLogsReport: React.FC = () => {
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<VehicleLogsWithHourSpent[]>([]);
+  const [plateNumber, setPlateNumber] = useState<string | null>(null);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -59,20 +64,19 @@ const VehicleLogsReport: React.FC = () => {
       dataIndex: "entryTime",
       key: "entryTime",
       render: (value?: Date) =>
-      value ? dayjs(value).format("YYYY-MM-DD hh:mm A") : "—"
+        value ? dayjs(value).format("YYYY-MM-DD hh:mm A") : "—",
     },
     {
       title: "Exit Time",
       dataIndex: "exitTime",
       key: "exitTime",
       render: (value?: Date) =>
-       value ? dayjs(value).format("YYYY-MM-DD hh:mm A") : "—"
+        value ? dayjs(value).format("YYYY-MM-DD hh:mm A") : "—",
     },
-     {
+    {
       title: "Hours Spent",
       dataIndex: "hoursSpent",
       key: "hoursSpent",
-     
     },
   ];
 
@@ -86,6 +90,7 @@ const VehicleLogsReport: React.FC = () => {
     const params: VehicleLogsDateRange = {
       dateFrom: start.format("YYYY-MM-DD"),
       dateTo: end.format("YYYY-MM-DD"),
+      plateNumber,
     };
 
     try {
@@ -144,7 +149,7 @@ const VehicleLogsReport: React.FC = () => {
         !log.isRegistered && log.isAllowed ? "Allowed" : "—",
         log.entryTime ? dayjs(log.entryTime).format("YYYY-MM-DD HH:mm A") : "—",
         log.exitTime ? dayjs(log.exitTime).format("YYYY-MM-DD HH:mm A") : "—",
-        log.hoursSpent??0
+        log.hoursSpent ?? 0,
       ]),
       startY: 35, // Start the table below the title and date range
       styles: {
@@ -168,6 +173,12 @@ const VehicleLogsReport: React.FC = () => {
           value={dateRange}
           onChange={(dates) => setDateRange(dates as [Dayjs, Dayjs])}
           placeholder={["Start Date", "End Date"]}
+        />
+        <Input
+          placeholder="Plate Number"
+          onChange={(e) => {
+            setPlateNumber(e.target.value);
+          }}
         />
         <Button
           type="primary"

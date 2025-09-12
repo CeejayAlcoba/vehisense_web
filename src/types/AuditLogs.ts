@@ -8,6 +8,8 @@ export type AuditLogs = {
     auditDate? : string;
 };
 export type AuditLogsDateRange = {
-	dateFrom? : string | Date;
-	dateTo : string | Date;
+	dateFrom? : string ;
+	dateTo : string ;
+	auditBy?:number | null,
+	action?:string|null
 };

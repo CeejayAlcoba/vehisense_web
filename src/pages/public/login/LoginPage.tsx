@@ -115,13 +115,13 @@ const LoginPage = () => {
               <Checkbox>Remember me</Checkbox>
             </Form.Item>
 
-            <Link
+            {/* <Link
               className="login-form-forgot"
               style={{ float: "right" }}
               href="#"
             >
               Forgot password?
-            </Link>
+            </Link> */}
           </Form.Item>
 
           <Form.Item>

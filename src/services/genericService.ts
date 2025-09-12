@@ -1,3 +1,4 @@
+import objectToUrlParams from "../utils/objectToUrlParams";
 import _fetch from "./_fetch";
 
 export default class GenericService<T> {
@@ -7,8 +8,9 @@ export default class GenericService<T> {
         this.subdirectory = subdirectory;
     }
 
-    public async getAllAsync(){
-        const {data:response}= await _fetch.get<T[]>(`${this.subdirectory}/list`);
+    public async getAllAsync(data?:Partial<T>){
+         const params = objectToUrlParams(data)
+        const {data:response}= await _fetch.get<T[]>(`${this.subdirectory}/list?${params}`);
         return response;
     }
 

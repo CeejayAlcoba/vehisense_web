@@ -18,6 +18,7 @@ export type VehicleLogsTotal = {
 export type VehicleLogsDateRange = {
   dateFrom?: Date | null | string;
   dateTo?: Date | null | string;
+  plateNumber? :string | null
 };
 export type VehicleLogsCountType = {
   vehicleType: string;

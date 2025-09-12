@@ -9,7 +9,8 @@ class AuditLogsService extends GenericService<AuditLogs> {
         super("audit-logs");
     }
     
-  public async getAllAsync(data?: AuditLogsDateRange){
+  public async getAll(data?: AuditLogsDateRange){
+    console.log(data)
         const params = objectToUrlParams(data);
         const { data: response } = await _fetch.get<AuditLogs[]>(`${this.subdirectory}/list?${params}`);
         return response;

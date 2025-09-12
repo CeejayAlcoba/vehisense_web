@@ -24,6 +24,8 @@ import { useState } from "react";
 import { _indexDbService, indexDbService } from "./services/indexDBService";
 import VehicleRegistrationForm from "./pages/public/vehicleRegistration/VehicleRegistrationForm";
 import VehicleQrScanner from "./pages/main/vehicleQrScanner/VehicleQrScanner";
+import UserPage from "./pages/main/users/UserPage";
+import ProfilePage from "./pages/main/profile/ProfilePage";
 
 function AppRoute() {
   const { user } = useUserContext();
@@ -101,9 +103,14 @@ function AppRoute() {
           <Route path="/report" element={<VehicleLogsReport />} />
           <Route path="/qr-scanner" element={<VehicleQrScanner />} />
           <Route path="/audit-logs" element={<AuditLogsPage />} />
+          <Route path="/users" element={<UserPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/vehicle-registration" element={<VehicleRegistrationForm />} />
+        <Route
+          path="/vehicle-registration"
+          element={<VehicleRegistrationForm />}
+        />
       </Routes>
     </Router>
   );

@@ -17,14 +17,17 @@ import Table from "../../../components/table/Table";
 import { BlacklistedVehicles } from "../../../types/BlacklistedVehicles";
 import _blacklistedVehiclesService from "../../../services/blacklistedVehiclesService";
 
+const { Search } = Input;
+
 export default function BlacklistedVehiclePage() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingRecord, setEditingRecord] = useState<BlacklistedVehicles | null>(null);
+const [search, setSearch] = useState<Partial<BlacklistedVehicles>>({});
 
   const { data: blacklistedVehicles, refetch } = useQuery({
-    queryKey: ["blacklisted-vehicles"],
-    queryFn: async () => await _blacklistedVehiclesService.getAllAsync(),
+    queryKey: ["blacklisted-vehicles",search],
+    queryFn: async () => await _blacklistedVehiclesService.getAllAsync(search),
     initialData: [],
   });
 
@@ -129,7 +132,13 @@ export default function BlacklistedVehiclePage() {
       >
         Add to Blacklist
       </Button>
-
+      <Search
+        placeholder="Search here..."
+        allowClear
+        enterButton="Search"
+        size="middle"
+        onSearch={(value)=>{setSearch(prev=>({...prev, vehiclePlate:value}))}}
+      />
       <Table columns={columns} dataSource={blacklistedVehicles} />
 
       <Modal
