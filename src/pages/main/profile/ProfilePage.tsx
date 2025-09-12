@@ -6,23 +6,26 @@ import { AxiosError } from "axios";
 
 export default function ProfilePage() {
   const [form] = Form.useForm();
+  const { user, setUser } = useUserContext();
+  const onFinish = async (values: ProfileEditDTO) => {
+    try {
+      await _meService.Update(values);
+      message.success("Profile updated successfully!");
+      setUser({
+        username: values.username,
+        roleId: user?.roleId ?? 0,
+        createdAt: user?.createdAt,
+      });
+    } catch (e: any) {
+      const ex: AxiosError = e;
 
-const onFinish = async (values: ProfileEditDTO) => {
-  console.log("Updated values:", values);
-  try {
-    await _meService.Update(values);
-    message.success("Profile updated successfully!");
-  } catch (e: any) {
-    const ex: AxiosError = e;
+      const errorMessage =
+        (ex.response?.data as any)?.message || "Failed to update profile.";
 
-    const errorMessage =
-      (ex.response?.data as any)?.message || "Failed to update profile.";
-
-    message.error(errorMessage);
-    console.error(ex);
-  }
-};
-  const { user } = useUserContext();
+      message.error(errorMessage);
+      console.error(ex);
+    }
+  };
 
   return (
     <Card title="Edit Profile" className="max-w-md mx-auto mt-6">
@@ -57,12 +60,42 @@ const onFinish = async (values: ProfileEditDTO) => {
         >
           <Input.Password placeholder="Enter a current password" />
         </Form.Item>
+
         <Form.Item
           name="newPassword"
           label="New Password (optional)"
           rules={[]}
         >
           <Input.Password placeholder="Enter a new password (optional)" />
+        </Form.Item>
+
+        {/* Confirm New Password */}
+        <Form.Item
+          name="confirmNewPassword"
+          label="Confirm New Password"
+          dependencies={["newPassword"]}
+          rules={[
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                if (!getFieldValue("newPassword")) {
+                  return Promise.resolve();
+                }
+                if (!value) {
+                  return Promise.reject(
+                    new Error("Please confirm your new password!")
+                  );
+                }
+                if (value !== getFieldValue("newPassword")) {
+                  return Promise.reject(
+                    new Error("The new passwords do not match!")
+                  );
+                }
+                return Promise.resolve();
+              },
+            }),
+          ]}
+        >
+          <Input.Password placeholder="Confirm your new password" />
         </Form.Item>
 
         {/* Submit */}

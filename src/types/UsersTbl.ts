@@ -4,7 +4,7 @@ export type UsersTbl = {
  	id? : number;
 	username : string;
 	roleId : number;
-	createdAt : Date;
+	createdAt? : Date;
 };
 
 export type UsersDTO = {

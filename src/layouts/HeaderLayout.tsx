@@ -3,6 +3,7 @@ import { Layout, Button, Dropdown, Menu, Avatar } from "antd";
 import { MenuUnfoldOutlined, MenuFoldOutlined, UserOutlined, SettingOutlined, LogoutOutlined } from "@ant-design/icons";
 import useUserContext, { UserContext } from "../useUserContext";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 
@@ -12,6 +13,7 @@ interface AppHeaderProps {
 }
 
 export default function HeaderLayout(props:AppHeaderProps){
+  const navigate = useNavigate();
   const {collapsed,setCollapsed} =props;
   const {user} =useUserContext();
  const {setUser}=useUserContext();
@@ -36,7 +38,7 @@ const handleMenuClick = ({ key }: { key: string }) => {
   if (key === "logout") {
     showLogoutConfirm();
   } else if (key === "settings") {
-    console.log("Navigating to settings...");
+    navigate("/profile")
   }
 };
 
