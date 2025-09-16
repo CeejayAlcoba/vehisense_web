@@ -211,7 +211,7 @@ export default function MonitoringCards() {
       };
 
       await _blacklistedVehiclesService.insertAsync(payload);
-      await _warningListService.deleteByPlateNumber(selectedRecord.plateNumber)
+      await _warningListService.deleteByPlateNumber(selectedRecord.plateNumber);
       Toast("Vehicle has been blacklisted.");
       form.resetFields();
       setIsModalOpen(false);
@@ -318,12 +318,28 @@ export default function MonitoringCards() {
               placeholder="Enter remarks for allowing vehicle"
             />
           </Form.Item>
-          <Form.Item name="allowedHourLimit" label="Number of Hours">
+          <Form.Item
+            name="allowedHourLimit"
+            label="Number of Hours"
+            rules={[
+              { required: true, message: "Please enter the number of hours" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || (Number(value) >= 0 && Number(value) <= 24)) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("Hours must be between 0 and 24")
+                  );
+                },
+              }),
+            ]}
+          >
             <Input
-              max={24}
-              min={0}
               type="number"
-              placeholder="Enter Number of Hours of allowing vehicle"
+              min={0}
+              max={24}
+              placeholder="Enter number of hours of allowing vehicle"
             />
           </Form.Item>
         </Form>
