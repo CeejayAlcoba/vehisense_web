@@ -320,6 +320,8 @@ export default function MonitoringCards() {
           </Form.Item>
           <Form.Item name="allowedHourLimit" label="Number of Hours">
             <Input
+              max={24}
+              min={0}
               type="number"
               placeholder="Enter Number of Hours of allowing vehicle"
             />

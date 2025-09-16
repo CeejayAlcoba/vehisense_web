@@ -60,12 +60,13 @@ const VehicleQrScanner: React.FC = () => {
 
   const handleApprove = async () => {
     try{
- await _vehicleService.insertAsync({
+    await _vehicleService.insertAsync({
       plateNumber: vehicle?.plateNumber ?? "",
       owner: vehicle?.ownerName ?? "",
       vehicleType: vehicle?.vehicleType ?? "",
       stickerNumber,
     });
+    
     message.success("Successfully approved");
     }
     catch(e:any){
