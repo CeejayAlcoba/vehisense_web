@@ -46,20 +46,14 @@ export default function RolePage() {
     initialData: [],
   });
 
-  const { refetch: refetchMappings } = useQuery({
-    queryKey: ["sidebar-role-mappings", selectedRole],
-    queryFn: async () => {
-      if (!selectedRole) return [];
-      const mappings = await _sidebarRoleMappingService.getByRoleIdAsync(
-        selectedRole
-      );
-      setSelectedSidebarIds(
-        mappings.map((m: SidebarRoleMapping) => m.sidebarId!)
-      );
-      return mappings;
-    },
-    enabled: false,
-  });
+  const handleSidebarRoleMapping = async (roleId: number) => {
+    if (!roleId) return [];
+    const mappings = await _sidebarRoleMappingService.getByRoleIdAsync(roleId);
+    setSelectedSidebarIds(
+      mappings.map((m: SidebarRoleMapping) => m.sidebarId!)
+    );
+    return mappings;
+  };
 
   const openAddRoleModal = () => {
     setEditingRole(null);
@@ -103,7 +97,7 @@ export default function RolePage() {
   const handleManageClick = async (roleId: number) => {
     setSelectedRole(roleId);
     setDrawerVisible(true);
-    await refetchMappings();
+    await handleSidebarRoleMapping(roleId);
   };
 
   const handleSaveSidebarMappings = async () => {

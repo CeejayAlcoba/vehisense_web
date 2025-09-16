@@ -7,11 +7,11 @@ import {
   ExportOutlined,
   StopOutlined,
   CheckOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import Table from "../../../components/table/Table";
 import TextColor from "../../../components/text/TextColor";
-import _vehicleLogsService from "../../../services/VehicleLogsService";
 import _blacklistedVehiclesService from "../../../services/blacklistedVehiclesService";
 
 import { getColumns } from "./MonitoringPage";
@@ -22,10 +22,13 @@ import {
 import { REFETCH_INTERVAL } from "../../../configs/request.config";
 
 import utc from "dayjs/plugin/utc";
-import { VehicleLogs } from "../../../types/VehicleLogs";
+import { OverDueDTO } from "../../../types/OverDueDTO";
 import { BlacklistedVehicles } from "../../../types/BlacklistedVehicles";
 import Toast from "../../../components/toast/Toast";
 import dayjs from "dayjs";
+import _vehicleLogsService from "../../../services/VehicleLogsService";
+import { WarningList } from "../../../types/WarningList";
+import _warningListService from "../../../services/warningListService";
 dayjs.extend(utc);
 
 export default function MonitoringCards() {
@@ -34,9 +37,9 @@ export default function MonitoringCards() {
   const [allowForm] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAllowModalOpen, setIsAllowModalOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<VehicleLogs | null>(
-    null
-  );
+  const [selectedRecord, setSelectedRecord] = useState<OverDueDTO | null>(null);
+  const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
+  const [warningForm] = Form.useForm();
   const [tick, setTick] = useState(0);
   useEffect(() => {
     const timer = setInterval(() => setTick((t) => t + 1), 1000);
@@ -72,8 +75,11 @@ export default function MonitoringCards() {
       title: "Hours Spent",
       dataIndex: "hoursSpent",
       key: "hoursSpent",
-      render: (value: number, record: VehicleLogs) => (
-        <TextColor isDanger={!record.isRegistered && !record.isAllowed}>
+      render: (value: number, record: OverDueDTO) => (
+        <TextColor
+          isDanger={!record.isRegistered && !record.isAllowed}
+          isWarning={record.isInWarningList}
+        >
           {value}
         </TextColor>
       ),
@@ -81,7 +87,7 @@ export default function MonitoringCards() {
     {
       title: "Time Spent",
       key: "liveTime",
-      render: (_: any, record: VehicleLogs) => {
+      render: (_: any, record: OverDueDTO) => {
         if (!record.entryTime) return "-";
 
         const entry = dayjs.utc(record.entryTime).local();
@@ -108,7 +114,7 @@ export default function MonitoringCards() {
     {
       title: "Time Spent",
       key: "liveTime",
-      render: (_: any, record: VehicleLogs) => {
+      render: (_: any, record: OverDueDTO) => {
         if (!record.entryTime) return "-";
 
         const entry = dayjs.utc(record.entryTime).local();
@@ -125,7 +131,10 @@ export default function MonitoringCards() {
         return (
           <TextColor
             isDanger={!record.isRegistered && !record.isAllowed}
-          >{`${hh}:${mm}:${ss}`}</TextColor>
+            isWarning={record.isInWarningList}
+          >
+            {`${hh}:${mm}:${ss}`}
+          </TextColor>
         );
       },
     },
@@ -137,20 +146,23 @@ export default function MonitoringCards() {
       dataIndex: "exitTime",
       key: "exitTime",
       render: (text: any, record: any) => (
-        <TextColor isDanger={!record.isRegistered && !record.isAllowed}>
+        <TextColor
+          isDanger={!record.isRegistered && !record.isAllowed}
+          isWarning={record.isInWarningList}
+        >
           {formatTo12Hour(text)}
         </TextColor>
       ),
     },
   ];
 
-  const overDueColumns = (data: VehicleLogs[]) => [
+  const overDueColumns = (data: OverDueDTO[]) => [
     ...getColumns(data),
     {
       title: "Action",
       dataIndex: "action",
       key: "action",
-      render: (_: any, record: VehicleLogs) => (
+      render: (_: any, record: OverDueDTO) => (
         <>
           <Tooltip title="Add to Blacklisted">
             <StopOutlined
@@ -172,6 +184,17 @@ export default function MonitoringCards() {
               }}
             />
           </Tooltip>
+          {!record.isInWarningList && (
+            <Tooltip title="Add to Warning">
+              <WarningOutlined
+                style={{ color: "orange", fontSize: 18, cursor: "pointer" }}
+                onClick={() => {
+                  setSelectedRecord(record);
+                  setIsWarningModalOpen(true);
+                }}
+              />
+            </Tooltip>
+          )}
         </>
       ),
     },
@@ -188,6 +211,7 @@ export default function MonitoringCards() {
       };
 
       await _blacklistedVehiclesService.insertAsync(payload);
+      await _warningListService.deleteByPlateNumber(selectedRecord.plateNumber)
       Toast("Vehicle has been blacklisted.");
       form.resetFields();
       setIsModalOpen(false);
@@ -196,15 +220,37 @@ export default function MonitoringCards() {
     }
   };
 
+  const handleWarning = async () => {
+    try {
+      const values = await warningForm.validateFields();
+      if (!selectedRecord) return;
+
+      const payload: WarningList = {
+        vehicleLogsId: selectedRecord.id,
+        plateNumber: selectedRecord.plateNumber,
+        note: values.note,
+      };
+      await _warningListService.insertAsync(payload);
+      Toast("Vehicle has been added to Warning List.");
+      warningForm.resetFields();
+      setIsWarningModalOpen(false);
+    } catch (err) {
+      console.log(err);
+      Toast("Warning add failed", { type: "error" });
+    }
+  };
+
   const handleAllowVehicle = async () => {
     try {
       const values = await allowForm.validateFields();
       if (!selectedRecord) return;
 
-      const payload: VehicleLogs = {
+      const payload: OverDueDTO = {
         ...selectedRecord,
         isAllowed: true,
         remarks: values.remarks,
+        allowedHourLimit: values.allowedHourLimit,
+        allowedDateTime: new Date().toISOString(),
       };
       console.log(payload);
       await _vehicleLogsService.updateAsync(selectedRecord.id ?? 0, payload);
@@ -270,6 +316,12 @@ export default function MonitoringCards() {
             <Input.TextArea
               rows={3}
               placeholder="Enter remarks for allowing vehicle"
+            />
+          </Form.Item>
+          <Form.Item name="allowedHourLimit" label="Number of Hours">
+            <Input
+              type="number"
+              placeholder="Enter Number of Hours of allowing vehicle"
             />
           </Form.Item>
         </Form>
@@ -352,6 +404,32 @@ export default function MonitoringCards() {
           </Card>
         </div>
       </div>
+      <Modal
+        title={
+          <>
+            Add to Warning List: Plate No.{" "}
+            <strong>{selectedRecord?.plateNumber}</strong> -{" "}
+            {selectedRecord?.vehicleType}
+          </>
+        }
+        open={isWarningModalOpen}
+        onOk={handleWarning}
+        onCancel={() => {
+          warningForm.resetFields();
+          setIsWarningModalOpen(false);
+        }}
+        okText="Add to Warning"
+      >
+        <Form form={warningForm} layout="vertical">
+          <Form.Item
+            name="note"
+            label="Note"
+            rules={[{ required: true, message: "Please input the note" }]}
+          >
+            <Input.TextArea rows={3} placeholder="Enter warning note" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }

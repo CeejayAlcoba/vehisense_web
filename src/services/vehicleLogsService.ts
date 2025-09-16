@@ -1,4 +1,5 @@
 
+import { OverDueDTO } from "../types/OverDueDTO";
 import { VehicleLogs, VehicleLogsCountType, VehicleLogsDateRange, VehicleLogsWithHourSpent } from "../types/VehicleLogs";
 import objectToUrlParams from "../utils/objectToUrlParams";
 import _fetch from "./_fetch";
@@ -34,7 +35,7 @@ class VehicleLogsService extends GenericService<VehicleLogs> {
         return response;
     }
     public async GetUnregisterOverDues(){
-        const {data:response} = await _fetch.get<VehicleLogs[]>(`${this.subdirectory}/unregister/over-dues`);
+        const {data:response} = await _fetch.get<OverDueDTO[]>(`${this.subdirectory}/unregister/over-dues`);
         return response;
     }
     public async CountUnregisterOverDues(){

@@ -13,6 +13,9 @@ export default function MonitoringColorLegend() {
           <Col span={24}>
             <Badge color="black" count="REGISTERED" />
           </Col>
+           <Col span={24}>
+            <Badge color="yellow" count="WARNING" />
+          </Col>
         </Row>
       </Card>
     </div>

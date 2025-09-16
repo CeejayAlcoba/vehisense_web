@@ -8,6 +8,8 @@ export type VehicleLogs = {
   vehicleType?: string;
   isAllowed?: boolean;
   remarks?: boolean
+  allowedHourLimit?: number,
+  allowedDateTime?:string
 };
 
 export type VehicleLogsTotal = {

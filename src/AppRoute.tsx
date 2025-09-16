@@ -26,6 +26,7 @@ import VehicleRegistrationForm from "./pages/public/vehicleRegistration/VehicleR
 import VehicleQrScanner from "./pages/main/vehicleQrScanner/VehicleQrScanner";
 import UserPage from "./pages/main/users/UserPage";
 import ProfilePage from "./pages/main/profile/ProfilePage";
+import WarningListPage from "./pages/main/warning/WarningPage";
 
 function AppRoute() {
   const { user } = useUserContext();
@@ -105,6 +106,7 @@ function AppRoute() {
           <Route path="/audit-logs" element={<AuditLogsPage />} />
           <Route path="/users" element={<UserPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+           <Route path="/warning-list" element={<WarningListPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route
