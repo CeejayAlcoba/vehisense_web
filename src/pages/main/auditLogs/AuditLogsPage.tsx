@@ -57,6 +57,13 @@ const AuditLogsPage: React.FC = () => {
       key: "auditDate",
       render: (value?: Date) =>
         value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "—",
+      // Add default sorter to show newest first
+      defaultSortOrder: "descend",
+      sorter: (a, b) => {
+        const dateA = a.auditDate ? dayjs(a.auditDate).valueOf() : 0;
+        const dateB = b.auditDate ? dayjs(b.auditDate).valueOf() : 0;
+        return dateA - dateB;
+      },
     },
   ];
 
@@ -65,6 +72,15 @@ const AuditLogsPage: React.FC = () => {
     queryFn: async () => await _userService.getAllAsync(),
     initialData: [],
   });
+
+  // Sort logs by date (newest first)
+  const sortLogsByDate = (logsData: AuditLogs[]) => {
+    return [...logsData].sort((a, b) => {
+      const dateA = a.auditDate ? dayjs(a.auditDate).valueOf() : 0;
+      const dateB = b.auditDate ? dayjs(b.auditDate).valueOf() : 0;
+      return dateB - dateA; // Descending order (newest first)
+    });
+  };
 
   // Fetch all logs on mount
   const fetchAllLogs = async () => {
@@ -76,7 +92,8 @@ const AuditLogsPage: React.FC = () => {
         auditBy: null,
         action: null,
       } as AuditLogsDateRange);
-      setLogs(data);
+      // Sort the logs before setting state
+      setLogs(sortLogsByDate(data));
     } catch (error: any) {
       message.error(error.message || "Failed to fetch audit logs.");
     } finally {
@@ -102,7 +119,8 @@ const AuditLogsPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await _auditLogsService.getAll(params);
-      setLogs(data);
+      // Sort the logs before setting state
+      setLogs(sortLogsByDate(data));
     } catch (error: any) {
       message.error(error.message || "Failed to fetch audit logs.");
     } finally {

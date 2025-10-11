@@ -41,6 +41,7 @@ export default function VehicleManagementPage() {
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [infoRecord, setInfoRecord] = useState<VehiclesTbl | null>(null);
   const [searchText, setSearchText] = useState("");
+  const [fileList, setFileList] = useState<any[]>([]);
 
   const { data: vehicles, refetch } = useQuery({
     queryKey: ["vehicles-list"],
@@ -59,7 +60,7 @@ export default function VehicleManagementPage() {
       message.error("File must be smaller than 10MB!");
       return Upload.LIST_IGNORE;
     }
-    return true;
+    return false; // Prevent auto upload
   };
 
   const getExpirationStatus = (expirationDate?: string | null) => {
@@ -82,14 +83,32 @@ export default function VehicleManagementPage() {
     setIsModalVisible(true);
     if (record) {
       setEditingRecord(record);
+      
+      // Prepare existing file for display
+      const existingFile = record.orCrFileName ? [{
+        uid: '-1',
+        name: record.orCrFileName,
+        status: 'done',
+        url: '#', // You can set actual URL if you have file viewing endpoint
+      }] : [];
+      
+      setFileList(existingFile);
+      
       form.setFieldsValue({
-        ...record,
+        plateNumber: record.plateNumber,
+        ownerName: record.owner,
+        ownerType: record.ownerType,
+        vehicleColor: record.vehicleColor,
+        vehicleType: record.vehicleType,
+        vehicleModel: record.vehicleModel,
+        stickerNumber: record.stickerNumber,
         expirationDate: record.expirationDate ? dayjs(record.expirationDate) : null,
         students: record.students || [{}],
-        OrCr: record.orCrFileName ? [{ name: record.orCrFileName }] : [],
+        OrCr: existingFile,
       });
     } else {
       setEditingRecord(null);
+      setFileList([]);
       form.resetFields();
     }
   };
@@ -104,6 +123,7 @@ export default function VehicleManagementPage() {
       formData.append("OwnerType", values.ownerType);
       formData.append("VehicleColor", values.vehicleColor);
       formData.append("VehicleType", values.vehicleType);
+      formData.append("StickerNumber", values.stickerNumber);
 
       if (values.vehicleModel) formData.append("VehicleModel", values.vehicleModel);
 
@@ -116,8 +136,15 @@ export default function VehicleManagementPage() {
         formData.append("Students", JSON.stringify(values.students));
       }
 
-      if (values.OrCr && values.OrCr[0]?.originFileObj) {
-        formData.append("OrCr", values.OrCr[0].originFileObj);
+      // Handle OR/CR file upload
+      // Only append new file if user selected a new one
+      if (values.OrCr && values.OrCr.length > 0) {
+        const file = values.OrCr[0];
+        // Check if this is a new file (has originFileObj) or existing file
+        if (file.originFileObj) {
+          formData.append("OrCr", file.originFileObj);
+        }
+        // If editing and no new file, the backend will keep the existing file
       }
 
       if (editingRecord?.id) {
@@ -129,6 +156,7 @@ export default function VehicleManagementPage() {
       }
 
       setIsModalVisible(false);
+      setFileList([]);
       form.resetFields();
       refetch();
     } catch (err) {
@@ -139,6 +167,7 @@ export default function VehicleManagementPage() {
 
   const handleCancel = () => {
     setIsModalVisible(false);
+    setFileList([]);
     form.resetFields();
   };
 
@@ -219,6 +248,10 @@ export default function VehicleManagementPage() {
     },
   ];
 
+  const handleFileChange = ({ fileList: newFileList }: any) => {
+    setFileList(newFileList);
+  };
+
   return (
     <div>
       <Space style={{ marginBottom: 16 }}>
@@ -277,6 +310,11 @@ export default function VehicleManagementPage() {
             <Input />
           </Form.Item>
 
+          <Form.Item name="stickerNumber" label="Sticker Number" 
+            rules={[{ required: true, message: "Please enter sticker number" }]}>
+              <Input placeholder="Enter sticker number" />
+          </Form.Item>
+
           <Form.Item 
             name="expirationDate" 
             label="Registration Expiration Date"
@@ -326,7 +364,16 @@ export default function VehicleManagementPage() {
           {/* OR/CR Upload */}
           <Form.Item
             name="OrCr"
-            label="Official Receipt / Certificate of Registration"
+            label={
+              <span>
+                Official Receipt / Certificate of Registration
+                {editingRecord && fileList.length > 0 && (
+                  <span style={{ color: '#52c41a', marginLeft: 8 }}>
+                    (File exists - upload new file to replace)
+                  </span>
+                )}
+              </span>
+            }
             valuePropName="fileList"
             getValueFromEvent={(e: any) => {
               if (Array.isArray(e)) {
@@ -334,13 +381,31 @@ export default function VehicleManagementPage() {
               }
               return e?.fileList;
             }}
-            rules={[{ required: true, message: "Please upload OR/CR file" }]}
+            rules={[
+              { 
+                required: !editingRecord, // Only required for new registration
+                message: "Please upload OR/CR file" 
+              }
+            ]}
           >
-            <Dragger beforeUpload={beforeUpload} maxCount={1}>
+            <Dragger 
+              beforeUpload={beforeUpload} 
+              maxCount={1}
+              fileList={fileList}
+              onChange={handleFileChange}
+              onRemove={() => {
+                setFileList([]);
+                return true;
+              }}
+            >
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
               </p>
-              <p className="ant-upload-text">Click or drag PDF to upload</p>
+              <p className="ant-upload-text">
+                {editingRecord 
+                  ? "Click or drag PDF to replace existing file" 
+                  : "Click or drag PDF to upload"}
+              </p>
               <p className="ant-upload-hint">Only PDF files are accepted. Max size: 10MB.</p>
             </Dragger>
           </Form.Item>
@@ -396,6 +461,11 @@ export default function VehicleManagementPage() {
               <strong>Students:</strong>{" "}
               {infoRecord.students?.map((s) => s.studentName).join(", ") || "-"}
             </p>
+            {infoRecord.orCrFileName && (
+              <p>
+                <strong>OR/CR File:</strong> {infoRecord.orCrFileName}
+              </p>
+            )}
           </div>
         ) : (
           <p>No data available</p>
