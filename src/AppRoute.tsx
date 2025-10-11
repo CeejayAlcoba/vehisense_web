@@ -13,7 +13,7 @@ import MonitoringPage from "./pages/main/monitoring/MonitoringPage";
 import VehicleManagementPage from "./pages/main/vehicle-management/VehicleManagementPage";
 import { useQuery } from "@tanstack/react-query";
 import Toast from "./components/toast/Toast";
-import _vehicleLogsService from "./services/VehicleLogsService";
+import _vehicleLogsService from "./services/vehicleLogsService";
 import { playAlertSound } from "./components/alertSound/playAlertSound";
 import BlacklistedVehiclePage from "./pages/main/blacklistedVehicle/BlacklistedVehiclePage";
 import SidebarPage from "./pages/main/sidebar/SidebarPage";
@@ -27,6 +27,8 @@ import VehicleQrScanner from "./pages/main/vehicleQrScanner/VehicleQrScanner";
 import UserPage from "./pages/main/users/UserPage";
 import ProfilePage from "./pages/main/profile/ProfilePage";
 import WarningListPage from "./pages/main/warning/WarningPage";
+import ReportsPage from "./pages/main/reportPage/reportPage";
+import WarningAndBlacklistPage from "./pages/main/warningBlacklistPage/WarningAndBlacklistPage";
 
 function AppRoute() {
   const { user } = useUserContext();
@@ -107,6 +109,9 @@ function AppRoute() {
           <Route path="/users" element={<UserPage />} />
           <Route path="/profile" element={<ProfilePage />} />
            <Route path="/warning-list" element={<WarningListPage />} />
+           <Route path="/reportPage" element={<ReportsPage />} />
+          <Route path="/warning-blacklist" element={<WarningAndBlacklistPage />} />
+
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route

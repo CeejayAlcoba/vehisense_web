@@ -26,7 +26,7 @@ import { OverDueDTO } from "../../../types/OverDueDTO";
 import { BlacklistedVehicles } from "../../../types/BlacklistedVehicles";
 import Toast from "../../../components/toast/Toast";
 import dayjs from "dayjs";
-import _vehicleLogsService from "../../../services/VehicleLogsService";
+import _vehicleLogsService from "../../../services/vehicleLogsService";
 import { WarningList } from "../../../types/WarningList";
 import _warningListService from "../../../services/warningListService";
 dayjs.extend(utc);
@@ -69,46 +69,53 @@ export default function MonitoringCards() {
 
   const { entries, actives, exits, overDues } = data;
 
-  const entranceColumns = (data: any) => [
-    ...getColumns(data),
-    {
-      title: "Hours Spent",
-      dataIndex: "hoursSpent",
-      key: "hoursSpent",
-      render: (value: number, record: OverDueDTO) => (
+const entranceColumns = (data: any) => [
+  ...getColumns(data),
+  {
+    title: "Minutes Spent",
+    dataIndex: "hoursSpent",
+    key: "minutesSpent",
+    render: (value: number, record: OverDueDTO) => {
+      // Convert hours to minutes (if it’s numeric)
+      const minutes = value ? Math.round(value * 60) : 0;
+      return (
         <TextColor
           isDanger={!record.isRegistered && !record.isAllowed}
           isWarning={record.isInWarningList}
         >
-          {value}
+          {minutes}
         </TextColor>
-      ),
+      );
     },
-    {
-      title: "Time Spent",
-      key: "liveTime",
-      render: (_: any, record: OverDueDTO) => {
-        if (!record.entryTime) return "-";
+  },
+  {
+    title: "Time Spent",
+    key: "liveTime",
+    render: (_: any, record: OverDueDTO) => {
+      if (!record.entryTime) return "-";
 
-        const entry = dayjs.utc(record.entryTime).local();
-        const end = record.exitTime
-          ? dayjs.utc(record.exitTime).local()
-          : dayjs();
+      const entry = dayjs.utc(record.entryTime).local();
+      const end = record.exitTime
+        ? dayjs.utc(record.exitTime).local()
+        : dayjs();
 
-        const seconds = end.diff(entry, "second");
+      const seconds = end.diff(entry, "second");
+      const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
+      const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+      const ss = String(seconds % 60).padStart(2, "0");
 
-        const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
-        const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-        const ss = String(seconds % 60).padStart(2, "0");
-
-        return (
-          <TextColor
-            isDanger={!record.isRegistered && !record.isAllowed}
-          >{`${hh}:${mm}:${ss}`}</TextColor>
-        );
-      },
+      return (
+        <TextColor
+          isDanger={!record.isRegistered && !record.isAllowed}
+          isWarning={record.isInWarningList}
+        >
+          {`${hh}:${mm}:${ss}`}
+        </TextColor>
+      );
     },
-  ];
+  },
+];
+
   const activeColumns = (data: any) => [
     ...getColumns(data),
     {
@@ -140,21 +147,46 @@ export default function MonitoringCards() {
     },
   ];
   const exitColumns = (data: any) => [
-    ...getColumns(data),
-    {
-      title: "Exit Time",
-      dataIndex: "exitTime",
-      key: "exitTime",
-      render: (text: any, record: any) => (
+  ...getColumns(data),
+  {
+    title: "Time Spent",
+    key: "timeSpent",
+    render: (_: any, record: any) => {
+      if (!record.entryTime || !record.exitTime) return "-";
+
+      const entry = dayjs.utc(record.entryTime).local();
+      const exit = dayjs.utc(record.exitTime).local();
+      const seconds = exit.diff(entry, "second");
+
+      const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
+      const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+      const ss = String(seconds % 60).padStart(2, "0");
+
+      return (
         <TextColor
           isDanger={!record.isRegistered && !record.isAllowed}
           isWarning={record.isInWarningList}
         >
-          {formatTo12Hour(text)}
+          {`${hh}:${mm}:${ss}`}
         </TextColor>
-      ),
+      );
     },
-  ];
+  },
+  {
+    title: "Exit Time",
+    dataIndex: "exitTime",
+    key: "exitTime",
+    render: (text: any, record: any) => (
+      <TextColor
+        isDanger={!record.isRegistered && !record.isAllowed}
+        isWarning={record.isInWarningList}
+      >
+        {formatTo12Hour(text)}
+      </TextColor>
+    ),
+  },
+];
+
 
   const overDueColumns = (data: OverDueDTO[]) => [
     ...getColumns(data),

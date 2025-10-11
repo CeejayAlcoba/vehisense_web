@@ -1,10 +1,10 @@
-import { Modal, Table, Tag } from "antd";
+import { Modal, Table, Tag, Input, Button, Space } from "antd";
 import { useEffect, useState } from "react";
-
-import { CheckCircleOutlined } from "@ant-design/icons";
+import { CheckCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import { VehiclesTbl } from "../../../../types/VehiclesTbl";
 import _vehicleService from "../../../../services/vehicleService";
 import { formatTo12HourWithDate } from "../../../../utils/dateTimeUtility";
+import { useNavigate } from "react-router-dom";
 
 type VehicleRegisterDialogProps = {
   isVisible: boolean;
@@ -13,7 +13,10 @@ type VehicleRegisterDialogProps = {
 
 export default function VehicleRegisterDialog({ isVisible, setIsVisible }: VehicleRegisterDialogProps) {
   const [vehicles, setVehicles] = useState<VehiclesTbl[]>([]);
+  const [searchText, setSearchText] = useState("");
+  const navigate = useNavigate();
 
+  // Fetch vehicles
   const fetchVehicles = async () => {
     const data = await _vehicleService.getAllAsync();
     setVehicles(data);
@@ -23,6 +26,18 @@ export default function VehicleRegisterDialog({ isVisible, setIsVisible }: Vehic
     if (!isVisible) return;
     fetchVehicles();
   }, [isVisible]);
+
+  // Filter vehicles based on search input
+  const filteredVehicles = vehicles.filter((v) =>
+    v.plateNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+    v.owner.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  // Navigate to Vehicle Management page
+  const goToVehicleManagement = () => {
+    navigate("/vehicle-management"); // <-- Update path if different
+    setIsVisible(false);
+  };
 
   const columns = [
     {
@@ -67,9 +82,28 @@ export default function VehicleRegisterDialog({ isVisible, setIsVisible }: Vehic
       footer={null}
       width={800}
     >
+      {/* Search + Go to Vehicle Management */}
+      <Space style={{ marginBottom: 16 }}>
+        <Input
+          placeholder="Search by plate number or owner"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          style={{ width: 300 }}
+          allowClear
+        />
+        <Button
+          type="primary"
+          onClick={goToVehicleManagement}
+          icon={<SearchOutlined />}
+        >
+          Go to Vehicle Management
+        </Button>
+      </Space>
+
+      {/* Table */}
       <Table
         columns={columns}
-        dataSource={vehicles}
+        dataSource={filteredVehicles}
         rowKey="id"
         pagination={false}
       />

@@ -56,34 +56,49 @@ const AuditLogsPage: React.FC = () => {
       dataIndex: "auditDate",
       key: "auditDate",
       render: (value?: Date) =>
-        value ? dayjs(value).format("YYYY-MM-DD hh:mm A") : "—",
+        value ? dayjs(value).format("YYYY-MM-DD HH:mm:ss") : "—",
     },
   ];
 
-  const {data:users}=useQuery({
-    queryKey:["users"],
-    queryFn:async()=>await _userService.getAllAsync(),
-    initialData:[]
-  })
-  // Fetch users for dropdown
- 
+  const { data: users } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => await _userService.getAllAsync(),
+    initialData: [],
+  });
 
+  // Fetch all logs on mount
+  const fetchAllLogs = async () => {
+    try {
+      setLoading(true);
+      const data = await _auditLogsService.getAll({
+        dateFrom: "",
+        dateTo: "",
+        auditBy: null,
+        action: null,
+      } as AuditLogsDateRange);
+      setLogs(data);
+    } catch (error: any) {
+      message.error(error.message || "Failed to fetch audit logs.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch logs filtered by date range, user, and/or action
   const fetchData = async () => {
-    if (!dateRange) {
-      message.warning("Please select a date range.");
+    if (!dateRange && !selectedUser && !action) {
+      // If all filters are empty, fetch all logs
+      fetchAllLogs();
       return;
     }
-    console.log(dateRange)
 
-    const [start, end] = dateRange;
     const params: AuditLogsDateRange = {
-      dateFrom: start.format("YYYY-MM-DD"),
-      dateTo: end.format("YYYY-MM-DD"),
+      dateFrom: dateRange ? dateRange[0].format("YYYY-MM-DD") : "",
+      dateTo: dateRange ? dateRange[1].format("YYYY-MM-DD") : "",
       auditBy: selectedUser ?? null,
       action: action || null,
     };
 
-    console.log(params)
     try {
       setLoading(true);
       const data = await _auditLogsService.getAll(params);
@@ -94,6 +109,10 @@ const AuditLogsPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAllLogs();
+  }, []);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
@@ -124,7 +143,7 @@ const AuditLogsPage: React.FC = () => {
         log.description,
         log?.auditName ?? "",
         log.action ?? "",
-        log.auditDate ?? "",
+        log.auditDate ? dayjs(log.auditDate).format("YYYY-MM-DD HH:mm:ss") : "—",
       ]),
       startY: 35,
       styles: { fontSize: 10, cellPadding: 3 },
@@ -144,7 +163,8 @@ const AuditLogsPage: React.FC = () => {
         <RangePicker
           value={dateRange}
           onChange={(dates) => {
-            setDateRange(dates as [Dayjs, Dayjs])}}
+            setDateRange(dates as [Dayjs, Dayjs]);
+          }}
           placeholder={["Start Date", "End Date"]}
         />
 
@@ -163,13 +183,23 @@ const AuditLogsPage: React.FC = () => {
           ))}
         </Select>
 
-        {/* Action Input */}
-        <Input
-          placeholder="Filter by Action"
+        {/* Action Dropdown */}
+        <Select
+          allowClear
           style={{ width: 180 }}
-          value={action}
-          onChange={(e) => setAction(e.target.value)}
-        />
+          placeholder="Filter by Action"
+          value={action || undefined}
+          onChange={(value) => setAction(value || "")}
+        >
+          <Option value="CREATE">Create</Option>
+          <Option value="UPDATE">Update</Option>
+          <Option value="DELETE">Delete</Option>
+          <Option value="Black Listed">Black Listed</Option>
+          <Option value="LOGOUT">Logout</Option>
+          <Option value="VIEW">View</Option>
+          <Option value="EXPORT">Export</Option>
+          <Option value="PRINT">Print</Option>
+        </Select>
 
         <Button
           type="primary"
@@ -210,7 +240,7 @@ const AuditLogsPage: React.FC = () => {
           columns={columns}
           rowKey="id"
           bordered
-          pagination={false}
+          pagination={{ pageSize: 10 }}
           loading={loading}
         />
       </div>

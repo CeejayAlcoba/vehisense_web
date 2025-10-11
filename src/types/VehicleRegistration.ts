@@ -2,6 +2,7 @@ export type VehicleRegistration = {
   id?: number;
   plateNumber: string;
   ownerName: string;
+  ownerType: string;
   vehicleColor: string;
   vehicleType: string;
   vehicleModel?: string;

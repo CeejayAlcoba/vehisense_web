@@ -13,22 +13,33 @@ import { DeleteOutlined } from "@ant-design/icons";
 import Toast from "../../../components/toast/Toast";
 import _warningListService from "../../../services/warningListService";
 import _blacklistedVehiclesService from "../../../services/blacklistedVehiclesService";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export default function WarningListPage() {
   const [isBlacklistModalOpen, setIsBlacklistModalOpen] = useState(false);
   const [blacklistForm] = Form.useForm();
   const [selectedRecord, setSelectedRecord] = useState<any | null>(null);
+  const [searchText, setSearchText] = useState("");
+
   const { data: warnings, refetch: refetchWarningLists } = useQuery({
     queryKey: ["warnings"],
     queryFn: async () => await _warningListService.getAllAsync(),
     initialData: [],
   });
 
+  // Filtered warnings based on search
+  const filteredWarnings = useMemo(() => {
+    if (!searchText) return warnings;
+    return warnings.filter(
+      (w: any) =>
+        w.plateNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+        w.vehicleType.toLowerCase().includes(searchText.toLowerCase())
+    );
+  }, [searchText, warnings]);
+
   const handleBlacklist = async () => {
     try {
       const values = await blacklistForm.validateFields();
-      console.log(selectedRecord)
       if (!selectedRecord) return;
 
       const payload = {
@@ -105,7 +116,19 @@ export default function WarningListPage() {
 
   return (
     <div>
-      <Table columns={columns} dataSource={warnings} rowKey="id" />
+      {/* Search Bar */}
+      <Space style={{ marginBottom: 16 }}>
+        <Input
+          placeholder="Search by Plate Number or Vehicle Type"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          allowClear
+          style={{ width: 300 }}
+        />
+      </Space>
+
+      <Table columns={columns} dataSource={filteredWarnings} rowKey="id" />
+
       <Modal
         title={
           <>

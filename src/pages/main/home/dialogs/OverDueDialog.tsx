@@ -1,56 +1,38 @@
-import { Table, Modal } from "antd";
+import { Table, Modal, Input, Button, Space } from "antd";
 import { useEffect, useState } from "react";
 import type { VehicleLogs } from "../../../../types/VehicleLogs";
-import dayjs from "dayjs";
-import { WarningOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
-import _vehicleLogsService from "../../../../services/VehicleLogsService";
+import { WarningOutlined, SearchOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import _vehicleLogsService from "../../../../services/vehicleLogsService";
 import { formatTo12HourWithDate } from "../../../../utils/dateTimeUtility";
 
-// Fake overdue data
-const fakeOverdueLogs: VehicleLogs[] = [
-  {
-    id: 1,
-    vehicleId: 101,
-    plateNumber: "ABC-123",
-    entryTime: new Date("2025-04-15T08:30:00"),
-    isRegistered: true,
-    vehicleType: "Car",
-  },
-  {
-    id: 2,
-    vehicleId: 102,
-    plateNumber: "XYZ-456",
-    entryTime: new Date("2025-04-14T14:00:00"),
-    isRegistered: false,
-    vehicleType: "Motorcycle",
-  },
-  {
-    id: 3,
-    vehicleId: 103,
-    plateNumber: "LMN-789",
-    entryTime: new Date("2025-04-13T10:45:00"),
-    isRegistered: true,
-    vehicleType: "Truck",
-  },
-];
+const { Search } = Input;
 
 type OverDueDialogProps = {
   isVisible: boolean;
   setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function OverDueDialog(props: OverDueDialogProps) {
-  const { isVisible, setIsVisible } = props;
-const [overDues,setOverDues]=useState<VehicleLogs[]>([])
-const handleGetOverDues=async()=>{
-   const data = await _vehicleLogsService.GetUnregisterOverDues();
-   setOverDues(data)
-}
-  useEffect(()=>{
-    if(!isVisible) return;
+export default function OverDueDialog({ isVisible, setIsVisible }: OverDueDialogProps) {
+  const [overDues, setOverDues] = useState<VehicleLogs[]>([]);
+  const [searchValue, setSearchValue] = useState("");
+  const navigate = useNavigate();
+
+  // Fetch overdue vehicles
+  const handleGetOverDues = async () => {
+    const data = await _vehicleLogsService.GetUnregisterOverDues();
+    setOverDues(data);
+  };
+
+  useEffect(() => {
+    if (!isVisible) return;
     handleGetOverDues();
-  },[isVisible])
+  }, [isVisible]);
+
+  // Filtered data based on searchValue
+  const filteredOverDues = overDues.filter((v) =>
+    v.plateNumber.toLowerCase().includes(searchValue.toLowerCase())
+  );
 
   const columns = [
     {
@@ -71,6 +53,14 @@ const handleGetOverDues=async()=>{
     },
   ];
 
+  // Navigate to Warning List page
+  const goToWarningList = () => {
+    navigate(
+      `/warning-blacklist?plate=${encodeURIComponent(searchValue)}&view=warning`
+    );
+    setIsVisible(false);
+  };
+
   return (
     <Modal
       title={
@@ -84,11 +74,32 @@ const handleGetOverDues=async()=>{
       footer={null}
       width={800}
     >
+      {/* Search Section */}
+      <Space style={{ marginBottom: 16 }}>
+        <Search
+          placeholder="Search plate number..."
+          enterButton={<SearchOutlined />}
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          onSearch={goToWarningList} // Enter key navigates
+          allowClear
+          style={{ width: 300 }}
+        />
+        <Button
+          type="primary"
+          onClick={goToWarningList} // Button click navigates
+          icon={<SearchOutlined />}
+        >
+          Go to Warning List
+        </Button>
+      </Space>
+
+      {/* Table with pagination */}
       <Table
         columns={columns}
-        dataSource={overDues}
+        dataSource={filteredOverDues}
         rowKey="id"
-        pagination={false}
+        pagination={{ pageSize: 10 }} // 10 rows per page
       />
     </Modal>
   );
