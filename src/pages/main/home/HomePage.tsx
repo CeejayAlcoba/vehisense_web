@@ -1,5 +1,5 @@
 import HomeCard from "./HomeCard";
-import _vehicleLogsService from "../../../services/VehicleLogsService";
+import _vehicleLogsService from "../../../services/vehicleLogsService";
 import TodayTotalLogsGraph from "./graphs/TodayTotalLogsGraph";
 import TodayActiveEntriesGraph from "./graphs/TodayActiveEntriesGraph";
 import { DatePicker, Space } from "antd";

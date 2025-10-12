@@ -10,7 +10,7 @@ export type VehiclesTbl = {
 	vehicleModel?: string;
     vehicleColor?: string;
 	registrationDate?: string; // Add this
-  expirationDate?: string | null; // Add this
+    expirationDate?: string | null; // Add this
 	students?: { studentName: string; studentNumber: string }[];
     orCrFileName?: string;
 };

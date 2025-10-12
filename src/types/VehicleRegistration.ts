@@ -9,6 +9,8 @@ export type VehicleRegistration = {
   students: Student[];
   OrCr: File;
   orCrFileName:string
+  registrationDate?: string; // Add this
+  expirationDate?: string | null;
 };
 
 export type Student = {

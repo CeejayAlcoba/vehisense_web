@@ -6,7 +6,7 @@ import {
   WarningOutlined,
   StopOutlined,
 } from "@ant-design/icons";
-import _vehicleLogsService from "../../../services/VehicleLogsService";
+import _vehicleLogsService from "../../../services/vehicleLogsService";
 import _vehicleService from "../../../services/vehicleService";
 import _blacklistedVehiclesService from "../../../services/blacklistedVehiclesService";
 import _userService from "../../../services/userService";
