@@ -1,6 +1,6 @@
 import { Bar } from "@ant-design/charts";
 import { Card, Input, Select, Space } from "antd";
-import _vehicleLogsService from "../../../../services/VehicleLogsService";
+import _vehicleLogsService from "../../../../services/vehicleLogsService";
 import { useQuery } from "@tanstack/react-query";
 import { REFETCH_INTERVAL } from "../../../../configs/request.config";
 import { VehicleLogsDateRange } from "../../../../types/VehicleLogs";

@@ -8,6 +8,8 @@ import {
   Button,
   message,
   Input,
+  Form,
+  DatePicker,
 } from "antd";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import _vehicleRegistrationService from "../../../services/vehicleRegistrationService";
@@ -15,6 +17,7 @@ import { VehicleRegistration } from "../../../types/VehicleRegistration";
 import { ReloadOutlined } from "@ant-design/icons";
 import _vehicleService from "../../../services/vehicleService";
 import { AxiosError } from "axios";
+import dayjs from "dayjs";
 
 const VehicleQrScanner: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -24,7 +27,7 @@ const VehicleQrScanner: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [scannerKey, setScannerKey] = useState(0);
   const [isApproveModalVisible, setIsApproveModalVisible] = useState(false);
-  const [stickerNumber, setStickerNumber] = useState("");
+  const [form] = Form.useForm();
 
   const handleScan = async (qrId: string) => {
     if (!qrId) return;
@@ -59,25 +62,37 @@ const VehicleQrScanner: React.FC = () => {
   };
 
   const handleApprove = async () => {
-    try{
-    await _vehicleService.insertAsync({
-      plateNumber: vehicle?.plateNumber ?? "",
-      owner: vehicle?.ownerName ?? "",
-      vehicleType: vehicle?.vehicleType ?? "",
-      stickerNumber,
-    });
-    
-    message.success("Successfully approved");
+    try {
+      const values = await form.validateFields();
+
+      await _vehicleService.insertAsync({
+        plateNumber: vehicle?.plateNumber ?? "",
+        owner: vehicle?.ownerName ?? "",
+        ownerType: vehicle?.ownerType ?? "",
+        vehicleType: vehicle?.vehicleType ?? "",
+        vehicleModel: vehicle?.vehicleModel ?? "",
+        vehicleColor: vehicle?.vehicleColor ?? "",
+        stickerNumber: values.stickerNumber,
+        registrationDate: dayjs().toISOString(),
+        expirationDate: values.expirationDate.toISOString(),
+      });
+
+      message.success("Vehicle successfully approved and registered!");
+      setIsApproveModalVisible(false);
+      handleCloseModal();
+      form.resetFields();
+    } catch (e: any) {
+      if (e.errorFields) {
+        message.error("Please fill in all required fields");
+        return;
+      }
+      const ex: AxiosError = e;
+      message.error((ex.response?.data as string) || "Request failed");
     }
-    catch(e:any){
-      const ex:AxiosError = e;
-       message.error(ex.response?.data as string ||  "Request failed");
-    }
-   
   };
 
   const handleApproveClick = () => {
-    setStickerNumber("");
+    form.resetFields();
     setIsApproveModalVisible(true);
   };
 
@@ -126,7 +141,7 @@ const VehicleQrScanner: React.FC = () => {
 
       <Modal
         open={isModalVisible}
-        title="Vehicle"
+        title="Vehicle Information"
         onCancel={handleCloseModal}
         footer={[
           <Button key="close" onClick={handleCloseModal}>
@@ -150,6 +165,9 @@ const VehicleQrScanner: React.FC = () => {
             <Descriptions.Item label="Owner Name">
               {vehicle.ownerName}
             </Descriptions.Item>
+            <Descriptions.Item label="Owner Type">
+              {vehicle.ownerType}
+            </Descriptions.Item>
             <Descriptions.Item label="Vehicle Color">
               {vehicle.vehicleColor}
             </Descriptions.Item>
@@ -157,39 +175,105 @@ const VehicleQrScanner: React.FC = () => {
               {vehicle.vehicleType}
             </Descriptions.Item>
             <Descriptions.Item label="Vehicle Model">
-              {vehicle.vehicleModel}
+              {vehicle.vehicleModel || "N/A"}
             </Descriptions.Item>
+            {vehicle.students && vehicle.students.length > 0 && (
+              <Descriptions.Item label="Students">
+                {vehicle.students.map((s, idx) => (
+                  <div key={idx}>
+                    {s.studentName} ({s.studentNumber})
+                  </div>
+                ))}
+              </Descriptions.Item>
+            )}
           </Descriptions>
         )}
         {pdfUrl && (
-          <iframe
-            src={pdfUrl}
-            width="100%"
-            height="600px"
-            style={{ border: "none" }}
-            title="Vehicle OR/CR PDF"
-          />
+          <div style={{ marginTop: 16 }}>
+            <h4>OR/CR Document:</h4>
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="600px"
+              style={{ border: "1px solid #d9d9d9", borderRadius: 8 }}
+              title="Vehicle OR/CR PDF"
+            />
+          </div>
         )}
       </Modal>
+
       <Modal
         open={isApproveModalVisible}
-        title="Approve Vehicle"
-        onCancel={() => setIsApproveModalVisible(false)}
+        title="Approve Vehicle Registration"
+        onCancel={() => {
+          setIsApproveModalVisible(false);
+          form.resetFields();
+        }}
         footer={[
-          <Button key="cancel" onClick={() => setIsApproveModalVisible(false)}>
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsApproveModalVisible(false);
+              form.resetFields();
+            }}
+          >
             Cancel
           </Button>,
-          <Button key="ok" type="primary" onClick={handleApprove}  disabled={!stickerNumber}>
-            Approve
+          <Button key="ok" type="primary" onClick={handleApprove}>
+            Approve & Register
           </Button>,
         ]}
+        width={500}
       >
-        <p>Please enter the sticker number for this vehicle:</p>
-        <Input
-          value={stickerNumber}
-          onChange={(e) => setStickerNumber(e.target.value)}
-          placeholder="Sticker Number"
-        />
+        <p style={{ marginBottom: 16, color: "#595959" }}>
+          Please assign a sticker number and set the expiration date for this vehicle:
+        </p>
+
+        {vehicle && (
+          <div
+            style={{
+              padding: 12,
+              backgroundColor: "#f5f5f5",
+              borderRadius: 8,
+              marginBottom: 16,
+            }}
+          >
+            <p style={{ margin: 0, fontSize: 14 }}>
+              <strong>Vehicle:</strong> {vehicle.plateNumber}
+            </p>
+            <p style={{ margin: 0, fontSize: 14 }}>
+              <strong>Owner:</strong> {vehicle.ownerName}
+            </p>
+            <p style={{ margin: 0, fontSize: 14 }}>
+              <strong>Type:</strong> {vehicle.vehicleType}
+            </p>
+          </div>
+        )}
+
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Sticker Number"
+            name="stickerNumber"
+            rules={[{ required: true, message: "Please enter sticker number" }]}
+          >
+            <Input placeholder="Enter sticker number (e.g., STK-001)" />
+          </Form.Item>
+
+          <Form.Item
+            label="Registration Expiration Date"
+            name="expirationDate"
+            rules={[{ required: true, message: "Please select expiration date" }]}
+          >
+            <DatePicker
+              style={{ width: "100%" }}
+              format="YYYY-MM-DD"
+              disabledDate={(current) =>
+                current && current < dayjs().startOf("day")
+              }
+              placeholder="Select expiration date"
+            />
+          </Form.Item>
+        </Form>
       </Modal>
     </Card>
   );
