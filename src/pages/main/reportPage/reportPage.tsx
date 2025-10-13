@@ -10,6 +10,7 @@ const ReportsPage: React.FC = () => {
 
   return (
     <div style={{ padding: 20 }}>
+      
       <Card style={{ marginBottom: 20 }}>
         <h2 style={{ marginBottom: 10 }}>Select Report Type</h2>
         <Select
