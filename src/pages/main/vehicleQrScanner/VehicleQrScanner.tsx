@@ -64,6 +64,9 @@ const VehicleQrScanner: React.FC = () => {
   const handleApprove = async () => {
     try {
       const values = await form.validateFields();
+      await _vehicleRegistrationService.UpdatePatch(vehicle?.id??0,{
+        ...vehicle,stickerNumber:values.stickerNumber, expirationDate:values.expirationDate? dayjs(values.expirationDate).format("YYYY-MM-DD") :""
+      })
 
       await _vehicleService.insertAsync({
         plateNumber: vehicle?.plateNumber ?? "",
@@ -77,6 +80,7 @@ const VehicleQrScanner: React.FC = () => {
         expirationDate: values.expirationDate.toISOString(),
       });
 
+    
       message.success("Vehicle successfully approved and registered!");
       setIsApproveModalVisible(false);
       handleCloseModal();
@@ -251,6 +255,7 @@ const VehicleQrScanner: React.FC = () => {
         )}
 
         <Form form={form} layout="vertical">
+         
           <Form.Item
             label="Sticker Number"
             name="stickerNumber"

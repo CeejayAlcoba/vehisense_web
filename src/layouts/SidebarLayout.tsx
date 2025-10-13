@@ -247,14 +247,34 @@ export default function SidebarLayout(props: SidebarLayoutProps) {
 
   const [sidebarItems, setSidebarItems] = useState<any[]>([]);
 
-  // Load sidebars from API
-  useEffect(() => {
-    const fetchSidebar = async () => {
-      try {
-        // You can switch this to the role-based one:
-        // const data = await _sidebarService.getByRoleIdAsync(roleId);
-        const data: Sidebar[] = await _sidebarService.getByRoleIdAsync(); // Calls /list/auth
-        const mappedItems = data.map((sb) => ({
+  
+ useEffect(() => {
+  const fetchSidebar = async () => {
+    try {
+      const data: Sidebar[] = await _sidebarService.getByRoleIdAsync();
+
+      const mappedItems = data.map((sb) => {
+        if (sb.name === "Flagged") {
+          return {
+            key: sb.id?.toString(),
+            icon: <AntIcon icon={sb.antIcon} />,
+            label: sb.name,
+            children: [
+              {
+                key: `${sb.id}-blacklisted`,
+                label: "Blacklisted",
+                onClick: () => navigate("/blacklisted"),
+              },
+              {
+                key: `${sb.id}-warninglist`,
+                label: "Warning List",
+                onClick: () => navigate("/warninglist"),
+              },
+            ],
+          };
+        }
+
+        return {
           key: sb.id?.toString(),
           icon: <AntIcon icon={sb.antIcon} />,
           label: sb.name,
@@ -262,15 +282,17 @@ export default function SidebarLayout(props: SidebarLayoutProps) {
             if (!sb.path) return;
             navigate(sb.path);
           },
-        }));
-        setSidebarItems(mappedItems);
-      } catch (err) {
-        console.error("Failed to load sidebar items:", err);
-      }
-    };
+        };
+      });
 
-    fetchSidebar();
-  }, [navigate]);
+      setSidebarItems(mappedItems);
+    } catch (err) {
+      console.error("Failed to load sidebar items:", err);
+    }
+  };
+
+  fetchSidebar();
+}, [navigate]);
 
   const activeKey = sidebarItems.find((i) => i.path === location.pathname)?.key;
 

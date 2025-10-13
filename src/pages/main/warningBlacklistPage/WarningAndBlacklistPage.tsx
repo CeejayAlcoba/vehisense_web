@@ -6,22 +6,21 @@ import BlacklistedVehiclePage from "../blacklistedVehicle/BlacklistedVehiclePage
 
 const { Option } = Select;
 
-const WarningAndBlacklistPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+type WarningAndBlacklistPageProps={
+  type:"warning" | "blacklist"
+}
+export default function WarningAndBlacklistPage ({type}:WarningAndBlacklistPageProps) {
   const [selectedView, setSelectedView] = useState<string>("warning");
 
-  // Only use the tab param to select view
   useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab === "blacklist" || tab === "warning") {
-      setSelectedView(tab);
-    }
-  }, [searchParams]);
+      setSelectedView(type);
+
+  }, [type]);
 
   return (
     <div style={{ padding: 20 }}>
       {/* Header Selector */}
-      <Card style={{ marginBottom: 20 }}>
+      {/* <Card style={{ marginBottom: 20 }}>
         <h2 style={{ marginBottom: 10 }}>Select View</h2>
         <Select
           value={selectedView}
@@ -31,7 +30,7 @@ const WarningAndBlacklistPage: React.FC = () => {
           <Option value="warning">Warning List</Option>
           <Option value="blacklist">Blacklisted Vehicles</Option>
         </Select>
-      </Card>
+      </Card> */}
 
       {/* Render the selected component */}
       <Card>
@@ -42,4 +41,3 @@ const WarningAndBlacklistPage: React.FC = () => {
   );
 };
 
-export default WarningAndBlacklistPage;

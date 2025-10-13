@@ -29,7 +29,7 @@ export default function RolePage() {
   const [selectedRole, setSelectedRole] = useState<number | null>(null);
   const [selectedSidebarIds, setSelectedSidebarIds] = useState<number[]>([]);
   const [drawerVisible, setDrawerVisible] = useState(false);
-
+  const [saving, setSaving] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<any>(null);
   const [form] = Form.useForm();
@@ -69,6 +69,7 @@ export default function RolePage() {
 
   const handleSaveRole = async () => {
     try {
+      setSaving(true)
       const values = await form.validateFields();
       if (editingRole) {
         await _roleService.updateAsync(editingRole.id, values);
@@ -82,6 +83,7 @@ export default function RolePage() {
     } catch (error) {
       console.error(error);
     }
+     setSaving(false)
   };
 
   const handleDeleteRole = async (roleId: number) => {
@@ -101,6 +103,7 @@ export default function RolePage() {
   };
 
   const handleSaveSidebarMappings = async () => {
+    setSaving(true)
     if (!selectedRole) return;
     const payload: SidebarRoleMapping[] = selectedSidebarIds.map(
       (sidebarId) => ({
@@ -111,6 +114,7 @@ export default function RolePage() {
     await _sidebarRoleMappingService.mergeAsync(payload);
     Toast("Mappings updated successfully");
     setDrawerVisible(false);
+      setSaving(false)
   };
 
   const columns = [
@@ -170,6 +174,7 @@ export default function RolePage() {
         title={editingRole ? "Update Role" : "Add Role"}
         open={isRoleModalOpen}
         onCancel={() => setIsRoleModalOpen(false)}
+        okButtonProps={{loading:saving}}
         onOk={handleSaveRole}
         okText="Save"
       >
@@ -193,7 +198,7 @@ export default function RolePage() {
         extra={
           <Space>
             <Button onClick={() => setDrawerVisible(false)}>Cancel</Button>
-            <Button type="primary" onClick={handleSaveSidebarMappings}>
+            <Button type="primary" onClick={handleSaveSidebarMappings} loading={saving}>
               Save
             </Button>
           </Space>

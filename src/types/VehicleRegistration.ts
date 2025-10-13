@@ -1,16 +1,17 @@
 export type VehicleRegistration = {
   id?: number;
-  plateNumber: string;
-  ownerName: string;
-  ownerType: string;
-  vehicleColor: string;
-  vehicleType: string;
+  plateNumber?: string;
+  ownerName?: string;
+  ownerType?: string;
+  vehicleColor?: string;
+  vehicleType?: string;
   vehicleModel?: string;
-  students: Student[];
-  OrCr: File;
-  orCrFileName:string
-  registrationDate?: string; // Add this
+  students?: Student[];
+  OrCr?: File;
+  orCrFileName?: string;
+  registrationDate?: string;
   expirationDate?: string | null;
+  stickerNumber?: string;
 };
 
 export type Student = {

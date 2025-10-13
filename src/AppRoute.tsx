@@ -29,6 +29,7 @@ import ProfilePage from "./pages/main/profile/ProfilePage";
 import WarningListPage from "./pages/main/warning/WarningPage";
 import ReportsPage from "./pages/main/reportPage/reportPage";
 import WarningAndBlacklistPage from "./pages/main/warningBlacklistPage/WarningAndBlacklistPage";
+import OverDueMinutesPage from "./pages/main/OverDueMinutes/OverDueMinutesPage";
 
 function AppRoute() {
   const { user } = useUserContext();
@@ -108,16 +109,18 @@ function AppRoute() {
           <Route path="/audit-logs" element={<AuditLogsPage />} />
           <Route path="/users" element={<UserPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-           <Route path="/warning-list" element={<WarningListPage />} />
-           <Route path="/reportPage" element={<ReportsPage />} />
-          <Route path="/warning-blacklist" element={<WarningAndBlacklistPage />} />
-
+          <Route path="/warning-list" element={<WarningListPage />} />
+          <Route path="/reportPage" element={<ReportsPage />} />
+          <Route path="/blacklisted" element={<BlacklistedVehiclePage />} />
+          <Route path="/warninglist" element={<WarningListPage />} />
+            <Route path="/over-due-minutes" element={<OverDueMinutesPage />} />
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/vehicle-registration"
           element={<VehicleRegistrationForm />}
         />
+       
       </Routes>
     </Router>
   );

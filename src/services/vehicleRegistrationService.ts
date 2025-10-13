@@ -6,7 +6,7 @@ class VehicleRegistrationService {
 
   public async getAllAsync() {
     const { data } = await _fetch.get<VehicleRegistration[]>(
-      this.subdirectory
+      `${this.subdirectory}/list`
     );
     return data;
   }
@@ -33,7 +33,13 @@ class VehicleRegistrationService {
     );
     return response.data;
   }
-
+public async UpdatePatch(id: number, data: VehicleRegistration) {
+    const { data: response } = await _fetch.patch<VehicleRegistration>(
+      `${this.subdirectory}/${id}`, 
+      data
+    );
+    return response;
+  }
   public async updateAsync(id: number, data: FormData) {
     const { data: response } = await _fetch.put<VehicleRegistration>(
       `${this.subdirectory}/${id}`, 
