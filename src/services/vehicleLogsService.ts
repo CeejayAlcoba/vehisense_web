@@ -1,6 +1,5 @@
-
 import { OverDueDTO } from "../types/OverDueDTO";
-import { VehicleLogs, VehicleLogsCountType, VehicleLogsDateRange, VehicleLogsWithHourSpent } from "../types/VehicleLogs";
+import { ManualExitDTO, VehicleLogs, VehicleLogsCountType, VehicleLogsDateRange, VehicleLogsWithHourSpent } from "../types/VehicleLogs";
 import objectToUrlParams from "../utils/objectToUrlParams";
 import _fetch from "./_fetch";
 import GenericService from "./genericService";
@@ -42,8 +41,20 @@ class VehicleLogsService extends GenericService<VehicleLogs> {
         const {data:response} = await _fetch.get<number>(`${this.subdirectory}/unregister/over-dues/count`);
         return response;
     }
-
-
+    
+    // ADD THIS METHOD - Fixed to use _fetch instead of axiosInstance
+    public async getNewEntries() {
+        const { data: response } = await _fetch.get<any[]>(`${this.subdirectory}/new-entries`);
+        return response;
+    }
+     public async manualExit(data: ManualExitDTO) {
+        const { data: response } = await _fetch.post<VehicleLogs>(
+            `${this.subdirectory}/manual-exit`,
+            data
+        );
+        return response;
+    }
 }
+
 const _vehicleLogsService = new VehicleLogsService();
-export default  _vehicleLogsService
+export default _vehicleLogsService;

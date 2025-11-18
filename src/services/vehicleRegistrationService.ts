@@ -40,6 +40,10 @@ public async UpdatePatch(id: number, data: VehicleRegistration) {
     );
     return response;
   }
+ public async getNextStickerNumber(): Promise<string> {
+  const { data } = await _fetch.get<string>(`${this.subdirectory}/next-sticker-number`);
+  return data;
+}
   public async updateAsync(id: number, data: FormData) {
     const { data: response } = await _fetch.put<VehicleRegistration>(
       `${this.subdirectory}/${id}`, 

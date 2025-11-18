@@ -8,19 +8,18 @@ import {
   StopOutlined,
   CheckOutlined,
   WarningOutlined,
+  LogoutOutlined, // ✅ NEW ICON
 } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Table from "../../../components/table/Table";
 import TextColor from "../../../components/text/TextColor";
 import _blacklistedVehiclesService from "../../../services/blacklistedVehiclesService";
-
 import { getColumns } from "./MonitoringPage";
 import {
   formatTo12Hour,
   getCurrentDateYMD,
 } from "../../../utils/dateTimeUtility";
 import { REFETCH_INTERVAL } from "../../../configs/request.config";
-
 import utc from "dayjs/plugin/utc";
 import { OverDueDTO } from "../../../types/OverDueDTO";
 import { BlacklistedVehicles } from "../../../types/BlacklistedVehicles";
@@ -29,9 +28,12 @@ import dayjs from "dayjs";
 import _vehicleLogsService from "../../../services/vehicleLogsService";
 import { WarningList } from "../../../types/WarningList";
 import _warningListService from "../../../services/warningListService";
+import { ManualExitDTO } from "../../../types/VehicleLogs"; // ✅ NEW IMPORT
+
 dayjs.extend(utc);
 
 export default function MonitoringCards() {
+  const queryClient = useQueryClient(); // ✅ ADD THIS
   const dateToday = getCurrentDateYMD();
   const [form] = Form.useForm();
   const [allowForm] = Form.useForm();
@@ -40,11 +42,18 @@ export default function MonitoringCards() {
   const [selectedRecord, setSelectedRecord] = useState<OverDueDTO | null>(null);
   const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
   const [warningForm] = Form.useForm();
+  
+  // ✅ NEW: Manual Exit Modal State
+  const [isManualExitModalOpen, setIsManualExitModalOpen] = useState(false);
+  const [manualExitForm] = Form.useForm();
+  
   const [tick, setTick] = useState(0);
+  
   useEffect(() => {
     const timer = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(timer);
   }, []);
+  
   const { data } = useQuery({
     queryKey: ["data"],
     queryFn: async () => {
@@ -69,52 +78,51 @@ export default function MonitoringCards() {
 
   const { entries, actives, exits, overDues } = data;
 
-const entranceColumns = (data: any) => [
-  ...getColumns(data),
-  {
-    title: "Minutes Spent",
-    dataIndex: "hoursSpent",
-    key: "minutesSpent",
-    render: (value: number, record: OverDueDTO) => {
-      // Convert hours to minutes (if it’s numeric)
-      const minutes = value ? Math.round(value * 60) : 0;
-      return (
-        <TextColor
-          isDanger={!record.isRegistered && !record.isAllowed}
-          isWarning={record.isInWarningList}
-        >
-          {minutes}
-        </TextColor>
-      );
+  const entranceColumns = (data: any) => [
+    ...getColumns(data),
+    {
+      title: "Minutes Spent",
+      dataIndex: "hoursSpent",
+      key: "minutesSpent",
+      render: (value: number, record: OverDueDTO) => {
+        const minutes = value ? Math.round(value * 60) : 0;
+        return (
+          <TextColor
+            isDanger={!record.isRegistered && !record.isAllowed}
+            isWarning={record.isInWarningList}
+          >
+            {minutes}
+          </TextColor>
+        );
+      },
     },
-  },
-  {
-    title: "Time Spent",
-    key: "liveTime",
-    render: (_: any, record: OverDueDTO) => {
-      if (!record.entryTime) return "-";
+    {
+      title: "Time Spent",
+      key: "liveTime",
+      render: (_: any, record: OverDueDTO) => {
+        if (!record.entryTime) return "-";
 
-      const entry = dayjs.utc(record.entryTime).local();
-      const end = record.exitTime
-        ? dayjs.utc(record.exitTime).local()
-        : dayjs();
+        const entry = dayjs.utc(record.entryTime).local();
+        const end = record.exitTime
+          ? dayjs.utc(record.exitTime).local()
+          : dayjs();
 
-      const seconds = end.diff(entry, "second");
-      const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
-      const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-      const ss = String(seconds % 60).padStart(2, "0");
+        const seconds = end.diff(entry, "second");
+        const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
+        const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+        const ss = String(seconds % 60).padStart(2, "0");
 
-      return (
-        <TextColor
-          isDanger={!record.isRegistered && !record.isAllowed}
-          isWarning={record.isInWarningList}
-        >
-          {`${hh}:${mm}:${ss}`}
-        </TextColor>
-      );
+        return (
+          <TextColor
+            isDanger={!record.isRegistered && !record.isAllowed}
+            isWarning={record.isInWarningList}
+          >
+            {`${hh}:${mm}:${ss}`}
+          </TextColor>
+        );
+      },
     },
-  },
-];
+  ];
 
   const activeColumns = (data: any) => [
     ...getColumns(data),
@@ -145,48 +153,71 @@ const entranceColumns = (data: any) => [
         );
       },
     },
+    // ✅ NEW: Manual Exit Action Column
+    {
+      title: "Action",
+      key: "action",
+      render: (_: any, record: OverDueDTO) => (
+        <Tooltip title="Manual Exit">
+          <LogoutOutlined
+            style={{ 
+              color: "#1890ff", 
+              fontSize: 18, 
+              cursor: "pointer" 
+            }}
+            onClick={() => {
+              setSelectedRecord(record);
+              setIsManualExitModalOpen(true);
+              manualExitForm.setFieldsValue({
+                remarks: "",
+              });
+            }}
+          />
+        </Tooltip>
+      ),
+    },
   ];
+
   const exitColumns = (data: any) => [
-  ...getColumns(data),
-  {
-    title: "Time Spent",
-    key: "timeSpent",
-    render: (_: any, record: any) => {
-      if (!record.entryTime || !record.exitTime) return "-";
+    ...getColumns(data),
+    {
+      title: "Time Spent",
+      key: "timeSpent",
+      render: (_: any, record: any) => {
+        if (!record.entryTime || !record.exitTime) return "-";
 
-      const entry = dayjs.utc(record.entryTime).local();
-      const exit = dayjs.utc(record.exitTime).local();
-      const seconds = exit.diff(entry, "second");
+        const entry = dayjs.utc(record.entryTime).local();
+        const exit = dayjs.utc(record.exitTime).local();
+        const seconds = exit.diff(entry, "second");
 
-      const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
-      const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
-      const ss = String(seconds % 60).padStart(2, "0");
+        const hh = String(Math.floor(seconds / 3600)).padStart(2, "0");
+        const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, "0");
+        const ss = String(seconds % 60).padStart(2, "0");
 
-      return (
+        return (
+          <TextColor
+            isDanger={!record.isRegistered && !record.isAllowed}
+            isWarning={record.isInWarningList}
+          >
+            {`${hh}:${mm}:${ss}`}
+          </TextColor>
+        );
+      },
+    },
+    {
+      title: "Exit Time",
+      dataIndex: "exitTime",
+      key: "exitTime",
+      render: (text: any, record: any) => (
         <TextColor
           isDanger={!record.isRegistered && !record.isAllowed}
           isWarning={record.isInWarningList}
         >
-          {`${hh}:${mm}:${ss}`}
+          {formatTo12Hour(text)}
         </TextColor>
-      );
+      ),
     },
-  },
-  {
-    title: "Exit Time",
-    dataIndex: "exitTime",
-    key: "exitTime",
-    render: (text: any, record: any) => (
-      <TextColor
-        isDanger={!record.isRegistered && !record.isAllowed}
-        isWarning={record.isInWarningList}
-      >
-        {formatTo12Hour(text)}
-      </TextColor>
-    ),
-  },
-];
-
+  ];
 
   const overDueColumns = (data: OverDueDTO[]) => [
     ...getColumns(data),
@@ -198,7 +229,7 @@ const entranceColumns = (data: any) => [
         <>
           <Tooltip title="Add to Blacklisted">
             <StopOutlined
-              style={{ color: "red", fontSize: 18, cursor: "pointer" }}
+              style={{ color: "red", fontSize: 18, cursor: "pointer", marginRight: 8 }}
               onClick={() => {
                 setSelectedRecord(record);
                 setIsModalOpen(true);
@@ -209,7 +240,7 @@ const entranceColumns = (data: any) => [
           <Tooltip title="Allow Entrance">
             <CheckOutlined
               className="text-primary"
-              style={{ fontSize: 18, cursor: "pointer" }}
+              style={{ fontSize: 18, cursor: "pointer", marginRight: 8 }}
               onClick={() => {
                 setSelectedRecord(record);
                 setIsAllowModalOpen(true);
@@ -231,6 +262,33 @@ const entranceColumns = (data: any) => [
       ),
     },
   ];
+
+  // ✅ NEW: Manual Exit Handler
+  const handleManualExit = async () => {
+    try {
+      const values = await manualExitForm.validateFields();
+      if (!selectedRecord) return;
+
+      const payload: ManualExitDTO = {
+        id: selectedRecord.id ?? 0,
+        remarks: values.remarks || "No remarks provided",
+        exitTime: new Date().toISOString(),
+      };
+
+      await _vehicleLogsService.manualExit(payload);
+      Toast(`Vehicle ${selectedRecord.plateNumber} has been manually exited.`);
+      
+      // Invalidate and refetch all queries to update all cards
+      queryClient.invalidateQueries({ queryKey: ["data"] });
+      
+      manualExitForm.resetFields();
+      setIsManualExitModalOpen(false);
+      setSelectedRecord(null);
+    } catch (err: any) {
+      console.error(err);
+      Toast(err?.message || "Manual exit failed. Please try again.", { type: "error" });
+    }
+  };
 
   const handleBlacklist = async () => {
     try {
@@ -297,6 +355,43 @@ const entranceColumns = (data: any) => [
 
   return (
     <>
+      {/* ✅ NEW: Manual Exit Modal */}
+      <Modal
+        title={
+          <>
+            Manual Exit: Plate No.{" "}
+            <strong>{selectedRecord?.plateNumber}</strong> -{" "}
+            {selectedRecord?.vehicleType}
+          </>
+        }
+        open={isManualExitModalOpen}
+        onOk={handleManualExit}
+        onCancel={() => {
+          manualExitForm.resetFields();
+          setIsManualExitModalOpen(false);
+          setSelectedRecord(null);
+        }}
+        okText="Exit Vehicle"
+        okButtonProps={{ danger: true }}
+      >
+        <Form form={manualExitForm} layout="vertical">
+          <Form.Item
+            name="remarks"
+            label="Remarks (Optional)"
+            help="Explain why manual exit is required"
+          >
+            <Input.TextArea
+              rows={3}
+              placeholder="e.g., System failed to detect exit, Camera malfunction, Manual override needed, etc."
+            />
+          </Form.Item>
+          <div style={{ marginTop: 16, padding: 12, background: "#f5f5f5", borderRadius: 4 }}>
+            <strong>Exit Time:</strong> {dayjs().format('YYYY-MM-DD hh:mm:ss A')}
+          </div>
+        </Form>
+      </Modal>
+
+      {/* Existing Modals - No changes needed */}
       <Modal
         title={
           <>
@@ -326,6 +421,7 @@ const entranceColumns = (data: any) => [
           </Form.Item>
         </Form>
       </Modal>
+
       <Modal
         title={
           <>
@@ -377,6 +473,34 @@ const entranceColumns = (data: any) => [
         </Form>
       </Modal>
 
+      <Modal
+        title={
+          <>
+            Add to Warning List: Plate No.{" "}
+            <strong>{selectedRecord?.plateNumber}</strong> -{" "}
+            {selectedRecord?.vehicleType}
+          </>
+        }
+        open={isWarningModalOpen}
+        onOk={handleWarning}
+        onCancel={() => {
+          warningForm.resetFields();
+          setIsWarningModalOpen(false);
+        }}
+        okText="Add to Warning"
+      >
+        <Form form={warningForm} layout="vertical">
+          <Form.Item
+            name="note"
+            label="Note"
+            rules={[{ required: true, message: "Please input the note" }]}
+          >
+            <Input.TextArea rows={3} placeholder="Enter warning note" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Cards */}
       <div className="row gap-3">
         <div className="col-xl-5">
           <Card
@@ -454,32 +578,6 @@ const entranceColumns = (data: any) => [
           </Card>
         </div>
       </div>
-      <Modal
-        title={
-          <>
-            Add to Warning List: Plate No.{" "}
-            <strong>{selectedRecord?.plateNumber}</strong> -{" "}
-            {selectedRecord?.vehicleType}
-          </>
-        }
-        open={isWarningModalOpen}
-        onOk={handleWarning}
-        onCancel={() => {
-          warningForm.resetFields();
-          setIsWarningModalOpen(false);
-        }}
-        okText="Add to Warning"
-      >
-        <Form form={warningForm} layout="vertical">
-          <Form.Item
-            name="note"
-            label="Note"
-            rules={[{ required: true, message: "Please input the note" }]}
-          >
-            <Input.TextArea rows={3} placeholder="Enter warning note" />
-          </Form.Item>
-        </Form>
-      </Modal>
     </>
   );
 }

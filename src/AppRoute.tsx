@@ -30,6 +30,9 @@ import WarningListPage from "./pages/main/warning/WarningPage";
 import ReportsPage from "./pages/main/reportPage/reportPage";
 import WarningAndBlacklistPage from "./pages/main/warningBlacklistPage/WarningAndBlacklistPage";
 import OverDueMinutesPage from "./pages/main/OverDueMinutes/OverDueMinutesPage";
+import DetectionStatusPage from "./pages/main/detectionStatusPage/DetectionStatusPage";
+import ExitDetectionStatusPage from "./pages/main/detectionStatusPage/ExitDetectionStatusPage";
+import CombinedStatusPage from "./pages/main/detectionStatusPage/CombinedStatusPage";
 
 function AppRoute() {
   const { user } = useUserContext();
@@ -114,6 +117,10 @@ function AppRoute() {
           <Route path="/blacklisted" element={<BlacklistedVehiclePage />} />
           <Route path="/warninglist" element={<WarningListPage />} />
             <Route path="/over-due-minutes" element={<OverDueMinutesPage />} />
+            <Route path="/detection-status" element={<DetectionStatusPage />} />
+            <Route path="/detection-status/exit" element={<ExitDetectionStatusPage />} />
+<Route path="/detection-status/combined" element={<CombinedStatusPage />} />
+
         </Route>
         <Route path="/login" element={<LoginPage />} />
         <Route

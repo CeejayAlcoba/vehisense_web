@@ -12,4 +12,4 @@ export type AuditLogsDateRange = {
 	dateTo : string ;
 	auditBy?:number | null,
 	action?:string|null
-};
+};	

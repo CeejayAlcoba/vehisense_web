@@ -10,6 +10,10 @@ export type VehicleLogs = {
   remarks?: boolean
   allowedHourLimit?: number,
   allowedDateTime?:string
+  color?: string;
+    isBlacklisted?: boolean;
+    blacklistReason?: string;
+    isInWarningList?: boolean;
 };
 
 export type VehicleLogsTotal = {
@@ -21,6 +25,11 @@ export type VehicleLogsDateRange = {
   dateFrom?: Date | null | string;
   dateTo?: Date | null | string;
   plateNumber? :string | null
+};
+export type ManualExitDTO = {
+  id: number;
+  remarks?: string;
+  exitTime: string; // ISO string format
 };
 export type VehicleLogsCountType = {
   vehicleType: string;

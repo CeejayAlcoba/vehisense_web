@@ -65,7 +65,9 @@ const VehicleQrScanner: React.FC = () => {
     try {
       const values = await form.validateFields();
       await _vehicleRegistrationService.UpdatePatch(vehicle?.id??0,{
-        ...vehicle,stickerNumber:values.stickerNumber, expirationDate:values.expirationDate? dayjs(values.expirationDate).format("YYYY-MM-DD") :""
+        ...vehicle,
+        stickerNumber:values.stickerNumber, 
+        expirationDate:values.expirationDate? dayjs(values.expirationDate).format("YYYY-MM-DD") :""
       })
 
       await _vehicleService.insertAsync({
@@ -80,7 +82,6 @@ const VehicleQrScanner: React.FC = () => {
         expirationDate: values.expirationDate.toISOString(),
       });
 
-    
       message.success("Vehicle successfully approved and registered!");
       setIsApproveModalVisible(false);
       handleCloseModal();
@@ -95,8 +96,15 @@ const VehicleQrScanner: React.FC = () => {
     }
   };
 
-  const handleApproveClick = () => {
+  const handleApproveClick = async () => {
     form.resetFields();
+    try {
+      // Fetch the next sticker number
+      const stickerNum = await _vehicleRegistrationService.getNextStickerNumber();
+      form.setFieldValue("stickerNumber", stickerNum);
+    } catch (error) {
+      message.error("Failed to generate sticker number");
+    }
     setIsApproveModalVisible(true);
   };
 
@@ -255,13 +263,12 @@ const VehicleQrScanner: React.FC = () => {
         )}
 
         <Form form={form} layout="vertical">
-         
           <Form.Item
-            label="Sticker Number"
+            label="Sticker Number (Auto-generated)"
             name="stickerNumber"
-            rules={[{ required: true, message: "Please enter sticker number" }]}
+            rules={[{ required: true, message: "Sticker number is required" }]}
           >
-            <Input placeholder="Enter sticker number (e.g., STK-001)" />
+            <Input disabled placeholder="Auto-generated sticker number" />
           </Form.Item>
 
           <Form.Item
