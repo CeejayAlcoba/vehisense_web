@@ -1,10 +1,11 @@
 import { Bar } from "@ant-design/charts";
-import { Card, Input, Select, Space } from "antd";
+import { Card, Space } from "antd";
 import _vehicleLogsService from "../../../../services/vehicleLogsService";
 import { useQuery } from "@tanstack/react-query";
 import { REFETCH_INTERVAL } from "../../../../configs/request.config";
 import { VehicleLogsDateRange } from "../../../../types/VehicleLogs";
 import { useState, useMemo } from "react";
+import SelectVehicleType from "../../../../components/select/SelectVehicleType";
 
 export default function TodayActiveEntriesGraph(props: VehicleLogsDateRange) {
   const [searchText, setSearchText] = useState("");
@@ -54,13 +55,11 @@ export default function TodayActiveEntriesGraph(props: VehicleLogsDateRange) {
     <Card
       title={`Active Entries (${total})`}
       extra={
-        <Space>
-          <Input
-            placeholder="Search vehicle type..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-            style={{ width: 220 }}
+        <Space style={{ marginTop: 12 }}>
+          <SelectVehicleType
+            style={{ width: 200 }}
+            onChange={(val) => setSearchText(val)}
+            name="vehicleType"
           />
         </Space>
       }

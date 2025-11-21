@@ -1,13 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Button,
-  DatePicker,
-  Table,
-  Space,
-  message,
-  Select,
-  Input,
-} from "antd";
+import { Button, DatePicker, Table, Space, message, Select, Input } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import {
   DownloadOutlined,
@@ -161,7 +153,9 @@ const AuditLogsPage: React.FC = () => {
         log.description,
         log?.auditName ?? "",
         log.action ?? "",
-        log.auditDate ? dayjs(log.auditDate).format("YYYY-MM-DD HH:mm:ss") : "—",
+        log.auditDate
+          ? dayjs(log.auditDate).format("YYYY-MM-DD HH:mm:ss")
+          : "—",
       ]),
       startY: 35,
       styles: { fontSize: 10, cellPadding: 3 },
@@ -213,10 +207,14 @@ const AuditLogsPage: React.FC = () => {
           <Option value="UPDATE">Update</Option>
           <Option value="DELETE">Delete</Option>
           <Option value="Black Listed">Black Listed</Option>
-          <Option value="LOGOUT">Logout</Option>
-          <Option value="VIEW">View</Option>
-          <Option value="EXPORT">Export</Option>
-          <Option value="PRINT">Print</Option>
+          <Option value="Manual Exit">Manual Exit</Option>
+          <Option value="Registered">Registered</Option>
+          <Option value="Registration Requested">Registration Requested</Option>
+          <Option value="Entrance Allowed">Entrance Allowed</Option>
+          <Option value="Remove From Overdue">Remove From Overdue</Option>
+          <Option value="Warning Removed ">Warning Removed </Option>
+          <Option value="Warning Added">Warning Added</Option>
+          <Option value="Warning Added">Warning Added</Option>
         </Select>
 
         <Button

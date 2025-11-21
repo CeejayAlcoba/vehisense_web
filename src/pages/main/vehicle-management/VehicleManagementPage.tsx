@@ -35,6 +35,7 @@ const { Dragger } = Upload;
 
 export default function VehicleManagementPage() {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form] = Form.useForm();
   const [editingRecord, setEditingRecord] =
     useState<VehicleRegistration | null>(null);
@@ -117,6 +118,7 @@ export default function VehicleManagementPage() {
 
   const handleOk = async () => {
     try {
+      setIsSubmitting(true);
       const values = await form.validateFields();
       const formData = new FormData();
       formData.append("Id", values.id);
@@ -126,7 +128,7 @@ export default function VehicleManagementPage() {
       formData.append("VehicleColor", values.vehicleColor);
       formData.append("VehicleType", values.vehicleType);
       formData.append("StickerNumber", values.stickerNumber);
-      formData.append("OrCrFileName", editingRecord?.orCrFileName??"");
+      formData.append("OrCrFileName", editingRecord?.orCrFileName ?? "");
       if (values.vehicleModel)
         formData.append("VehicleModel", values.vehicleModel);
 
@@ -164,6 +166,7 @@ export default function VehicleManagementPage() {
       console.log(err);
       message.error("Please fill all required fields.");
     }
+    setIsSubmitting(false);
   };
 
   const handleCancel = () => {
@@ -279,6 +282,9 @@ export default function VehicleManagementPage() {
         title={editingRecord ? "Update Vehicle" : "Register Vehicle"}
         visible={isModalVisible}
         onOk={handleOk}
+        okButtonProps={{
+          loading: isSubmitting,
+        }}
         onCancel={handleCancel}
         okText={editingRecord ? "Update" : "Create"}
         width={700}
@@ -414,10 +420,13 @@ export default function VehicleManagementPage() {
             valuePropName="fileList"
             getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
           >
-            <Dragger beforeUpload={ (file: RcFile) =>{
-              beforeUpload(file)
-              setPdfUrl("")
-            }} maxCount={1}>
+            <Dragger
+              beforeUpload={(file: RcFile) => {
+                beforeUpload(file);
+                setPdfUrl("");
+              }}
+              maxCount={1}
+            >
               <p className="ant-upload-drag-icon">
                 <InboxOutlined />
               </p>

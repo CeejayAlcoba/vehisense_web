@@ -1,10 +1,11 @@
 import { Bar } from "@ant-design/charts";
-import { Card, Input, Space } from "antd";
+import { Card, Space } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import _vehicleLogsService from "../../../../services/vehicleLogsService";
 import { REFETCH_INTERVAL } from "../../../../configs/request.config";
 import { VehicleLogsDateRange } from "../../../../types/VehicleLogs";
 import { useState, useMemo } from "react";
+import SelectVehicleType from "../../../../components/select/SelectVehicleType";
 
 export default function TodayTotalLogsGraph(props: VehicleLogsDateRange) {
   const [searchText, setSearchText] = useState("");
@@ -23,9 +24,7 @@ export default function TodayTotalLogsGraph(props: VehicleLogsDateRange) {
   // 🔹 Filter data based on search text
   const filteredData = useMemo(() => {
     const lower = searchText.toLowerCase();
-    return typeCount.filter((item) =>
-      item.type.toLowerCase().includes(lower)
-    );
+    return typeCount.filter((item) => item.type.toLowerCase().includes(lower));
   }, [searchText, typeCount]);
 
   // 🔹 Sort alphabetically (optional, for cleaner order)
@@ -56,13 +55,11 @@ export default function TodayTotalLogsGraph(props: VehicleLogsDateRange) {
     <Card
       title={`Total (${total})`}
       extra={
-        <Space>
-          <Input
-            placeholder="Search vehicle type..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            allowClear
-            style={{ width: 220 }}
+        <Space style={{ marginTop: 12 }}>
+          <SelectVehicleType
+            style={{ width: 200 }}
+            onChange={(val) => setSearchText(val)}
+            name="vehicleType"
           />
         </Space>
       }
